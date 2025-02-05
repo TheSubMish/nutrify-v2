@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+.gabarito-uniquifier {
+  font-family: "Inter", serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
+
 :root {
   /* Theme Colors */
   --primary: #6A0DAD;
@@ -22,7 +32,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground: #0a0a0a;
-    --background: #ededed;
+    --background: #efefef;
   }
 }
 
@@ -60,4 +70,31 @@ body {
 
 .text-accent {
   color: var(--accent);
+}
+
+.hamburger {
+  cursor: pointer;
+  width: 30px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bar {
+  height: 4px; /* Thickness of bars */
+  background-color: black; /* Color of bars */
+  transition: all 0.3s ease; /* Smooth transition for animations */
+}
+
+.open .bar:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.open .bar:nth-child(2) {
+  opacity: 0; /* Hide middle bar */
+}
+
+.open .bar:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
 }
