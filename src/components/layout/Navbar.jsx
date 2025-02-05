@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import clsx from "clsx"
-import HamburgerMenu from "../HamburgerMenu" // Ensure this path is correct
+import HamburgerMenu from "../HamburgerMenu"
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -21,9 +22,16 @@ function Navbar() {
         {/* Logo */}
         <Link
           href="/"
-          className="text-4xl md:text-[4vw] lg:text-[3vw] xl:text-[2.5vw] 2xl:text-4xl font-bold z-10 mx-auto md:mx-0 gabarito-uniquifier"
+          className="flex items-center gap-2 text-2xl md:text-3xl lg:text-4xl font-bold z-10 gabarito-uniquifier"
         >
-          Nutrifyme
+          <Image
+            src="/logo.png"
+            alt="Nutrifyme Logo"
+            width={48}
+            height={48}
+            className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
+          />
+          <span className="hidden sm:inline">Nutrifyme</span>
         </Link>
 
         {/* Hamburger Menu */}
@@ -76,13 +84,13 @@ function Navbar() {
             <li className="my-7 md:my-0 md:mx-5">
               <Link
                 onClick={closeMenu}
-                href="/project"
+                href="/contact"
                 className={clsx(
                   "text-2xl md:text-[2vw] lg:text-[1.5vw] xl:text-[1.2vw] 2xl:text-xl font-bold link link-underline link-underline-black",
                   isActive("/project") ? "text-gray-500" : "text-black",
                 )}
               >
-                Project
+                Contact
               </Link>
             </li>
 
@@ -90,13 +98,13 @@ function Navbar() {
             <li className="my-7 md:my-0 md:mx-5">
               <Link
                 onClick={closeMenu}
-                href="/contact"
+                href="/blog"
                 className={clsx(
                   "text-2xl md:text-[2vw] lg:text-[1.5vw] xl:text-[1.2vw] 2xl:text-xl font-bold link link-underline link-underline-black",
                   isActive("/contact") ? "text-gray-500" : "text-black",
                 )}
               >
-                Contact
+                Blogs
               </Link>
             </li>
 
@@ -105,9 +113,9 @@ function Navbar() {
               <Link
                 onClick={closeMenu}
                 href="/login"
-                className="px-6 py-2 text-lg md:text-[1.8vw] lg:text-[1.3vw] xl:text-[1vw] 2xl:text-lg font-semibold rounded-full text-white btn-primary"
+                className="inline-block whitespace-nowrap px-4 py-2 text-base font-semibold rounded-lg text-white btn-primary"
               >
-                Log In
+                Log-In
               </Link>
             </li>
           </ul>
