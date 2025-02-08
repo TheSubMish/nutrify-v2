@@ -4,11 +4,13 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import {motion, useScroll,useMotionValueEvent} from 'framer-motion'
 import clsx from "clsx"
 import HamburgerMenu from "../HamburgerMenu"
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [hidden, setHidden] = useState(false);
   const pathname = usePathname()
 
   const toggleMenu = () => setIsOpen((prev) => !prev)
@@ -16,8 +18,24 @@ function Navbar() {
 
   const isActive = (href) => pathname === href
 
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious();
+    if (latest > previous && latest > 150) {
+      setHidden(true);
+    } else {
+      setHidden(false);
+    }
+  });
+
   return (
-    <nav className="sticky top-0 bg-white w-full md:mb-10 lg:px-24 xl:px-40 pt-7 lg:pt-10 pb-5 border-b-2">
+    <motion.nav 
+      variants={{ visible: { y: 0 }, hidden: { y: "-100%" } }}
+      animate={hidden ? "hidden" : "visible"}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className="sticky top-0 bg-white w-full md:mb-10 lg:px-24 xl:px-40 pt-7 lg:pt-10 pb-5 border-b-2"
+    >
       <div className="flex justify-between items-center relative px-6">
         {/* Logo */}
         <Link
@@ -121,7 +139,7 @@ function Navbar() {
           </ul>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   )
 }
 
