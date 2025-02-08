@@ -17,7 +17,7 @@ function Navbar() {
   const isActive = (href) => pathname === href
 
   return (
-    <nav className="sticky top-0 bg-white w-full md:mb-10 lg:px-24 xl:px-40 pt-7 lg:pt-10 pb-5">
+    <nav className="sticky top-0 bg-white w-full md:mb-10 lg:px-24 xl:px-40 pt-7 lg:pt-10 pb-5 border-b-2">
       <div className="flex justify-between items-center relative px-6 md:px-16">
         {/* Logo */}
         <Link
