@@ -15,7 +15,7 @@
 :root {
   /* Theme Colors */
   --primary: #6A0DAD;
-  --secondary: #B19CD9;
+  --secondary: #147870;
   --secondary-alt: #4A90E2;
   --neutral-light: #F5F5F5;
   --neutral-dark: #3A3A3A;
@@ -52,7 +52,9 @@ body {
 
 .btn-secondary {
   background-color: var(--secondary);
-  color: var(--neutral-dark);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
 }
 
 .btn-cta {
