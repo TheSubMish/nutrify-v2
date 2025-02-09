@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
+import BMICalculator from "@/components/home/Bmi"
 import { Calendar, ChefHat, Salad, Utensils } from "lucide-react"
 
 export default function LandingPage() {
@@ -74,6 +75,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+        <BMICalculator />
         <section id="cta" className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
