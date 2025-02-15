@@ -1,5 +1,7 @@
 import { BlogCard } from '@/components/blog/blogcard'
 import Button from '@/components/ui/Button'
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 export default function BlogList() {
   // This would typically come from an API or database
@@ -31,16 +33,20 @@ export default function BlogList() {
   ]
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">NutrifyMe Blog</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {blogPosts.map((post) => (
-          <BlogCard key={post.id} post={post} />
-        ))}
+    <>
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">NutrifyMe Blog</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {blogPosts.map((post) => (
+            <BlogCard key={post.id} post={post} />
+          ))}
+        </div>
+        <div className="mt-12 text-center">
+          <Button>Load More Posts</Button>
+        </div>
       </div>
-      <div className="mt-12 text-center">
-        <Button>Load More Posts</Button>
-      </div>
-    </div>
+      <Footer />
+    </>
   )
 }

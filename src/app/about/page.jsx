@@ -2,10 +2,14 @@ import Button from "@/components/ui/Button"
 // import { TeamMember } from "@/components/about/team-member"
 import { PageHeader } from "@/components/ui/PageHeader"
 import { Salad, Heart, Brain } from 'lucide-react'
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      <Navbar />
+      <div className="flex flex-col min-h-screen">
       <main className="flex-1">
         <PageHeader
           title="About NutrifyMe"
@@ -92,6 +96,8 @@ export default function AboutPage() {
         </section>
       </main>
     </div>
+    <Footer />
+    </>
   )
 }
 

@@ -130,7 +130,7 @@ function Navbar() {
             <li className="my-7 md:my-0 md:mx-5">
               <Link
                 onClick={closeMenu}
-                href="/login"
+                href="/auth/login"
                 className="inline-block whitespace-nowrap px-4 py-2 text-base font-semibold rounded-lg text-white btn-primary"
               >
                 Log-In

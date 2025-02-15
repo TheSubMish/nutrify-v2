@@ -2,6 +2,8 @@ import { BlogHeader } from '@/components/blog/BlogHeader'
 import { BlogContent } from '@/components/blog/BlogContent'
 import { BlogAuthor } from '@/components/blog/BlogAuthor'
 import { RelatedPosts } from '@/components/blog/RelatedPosts'
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 export default function BlogPost({ params }) {
   // In a real application, you would fetch the blog post data based on the ID
@@ -35,17 +37,21 @@ export default function BlogPost({ params }) {
   ]
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <BlogHeader title={post.title} date={post.date} readTime={post.readTime} image={post.image} />
-      <div className="mt-8 flex flex-col lg:flex-row">
-        <div className="lg:w-2/3 lg:pr-8">
-          <BlogContent content={post.content} />
-          <BlogAuthor author={post.author} />
-        </div>
-        <div className="lg:w-1/3 mt-8 lg:mt-0">
-          <RelatedPosts posts={relatedPosts} />
+    <>
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <BlogHeader title={post.title} date={post.date} readTime={post.readTime} image={post.image} />
+        <div className="mt-8 flex flex-col lg:flex-row">
+          <div className="lg:w-2/3 lg:pr-8">
+            <BlogContent content={post.content} />
+            <BlogAuthor author={post.author} />
+          </div>
+          <div className="lg:w-1/3 mt-8 lg:mt-0">
+            <RelatedPosts posts={relatedPosts} />
+          </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   )
 }
