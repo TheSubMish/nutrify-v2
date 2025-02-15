@@ -105,7 +105,7 @@ function Navbar() {
                 href="/contact"
                 className={clsx(
                   "text-2xl md:text-[2vw] lg:text-[1.5vw] xl:text-[1.2vw] 2xl:text-xl font-bold link link-underline link-underline-black",
-                  isActive("/project") ? "text-gray-500" : "text-black",
+                  isActive("/contact") ? "text-gray-500" : "text-black",
                 )}
               >
                 Contact
@@ -119,7 +119,7 @@ function Navbar() {
                 href="/blog"
                 className={clsx(
                   "text-2xl md:text-[2vw] lg:text-[1.5vw] xl:text-[1.2vw] 2xl:text-xl font-bold link link-underline link-underline-black",
-                  isActive("/contact") ? "text-gray-500" : "text-black",
+                  isActive("/blog") ? "text-gray-500" : "text-black",
                 )}
               >
                 Blogs
