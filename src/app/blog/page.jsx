@@ -1,5 +1,5 @@
 import { BlogCard } from '@/components/blog/blogcard'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 

@@ -1,5 +1,5 @@
-import Button from "@/components/ui/Button"
-import Input from "@/components/ui/Input"
+import Button from "@/components/ui/button"
+import Input from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/auth/card"
 import Label from "@/components/ui/Label"
 import Link from "next/link"

@@ -1,4 +1,4 @@
-import Button from "@/components/ui/Button"
+import Button from "@/components/ui/button"
 // import { TeamMember } from "@/components/about/team-member"
 import { PageHeader } from "@/components/ui/PageHeader"
 import { Salad, Heart, Brain } from 'lucide-react'

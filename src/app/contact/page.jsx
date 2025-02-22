@@ -1,5 +1,5 @@
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
+import Button from "@/components/ui/button";
+import Input from "@/components/ui/input";
 import { Textarea } from "@/components/ui/TextArea";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ContactInfo } from "@/components/contact/contact-info";

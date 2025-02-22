@@ -1,5 +1,5 @@
-import Button from "@/components/ui/Button"
-import Input from "@/components/ui/Input"
+import Button from "@/components/ui/button"
+import Input from "@/components/ui/input"
 import BMICalculator from "@/components/home/Bmi"
 import { Calendar, ChefHat, Salad, Utensils } from "lucide-react"
 import Navbar from "@/components/layout/Navbar";

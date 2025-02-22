@@ -2,11 +2,11 @@
 
 import { useState, useCallback } from "react"
 import { Calculator } from "lucide-react"
-import Button from "@/components/ui/Button"
-import Input from "@/components/ui/Input"
+import Button from "@/components/ui/button"
+import Input from "@/components/ui/input"
 import Label from "@/components/ui/Label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function BMICalculator() {
   const [height, setHeight] = useState("")
