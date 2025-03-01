@@ -50,7 +50,7 @@ export default function ContactPage() {
                     <Input type="email" placeholder="Your Email" required />
                     <Input placeholder="Subject" />
                     <Textarea placeholder="Your Message" className="min-h-[150px]" required />
-                    <Button type="submit" className="w-full">Send Message</Button>
+                    <Button variant="secondary" type="submit" className="w-full font-bold">Send Message</Button>
                   </form>
                 </div>
               </div>

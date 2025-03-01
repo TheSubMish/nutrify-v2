@@ -98,7 +98,7 @@ function Navbar() {
               </Link>
             </li>
 
-            {/* Project Link */}
+            {/* Contact Link */}
             <li className="my-7 md:my-0 md:mx-5">
               <Link
                 onClick={closeMenu}
@@ -112,8 +112,8 @@ function Navbar() {
               </Link>
             </li>
 
-            {/* Contact Link */}
-            <li className="my-7 md:my-0 md:mx-5">
+            {/* Blog Link */}
+            {/* <li className="my-7 md:my-0 md:mx-5">
               <Link
                 onClick={closeMenu}
                 href="/blog"
@@ -124,7 +124,7 @@ function Navbar() {
               >
                 Blogs
               </Link>
-            </li>
+            </li> */}
 
             {/* Login Button */}
             <li className="my-7 md:my-0 md:mx-5">
