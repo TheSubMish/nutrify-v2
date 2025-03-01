@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { PanelLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Button from '@/components/ui/button'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 
 const SIDEBAR_WIDTH = "16rem"
@@ -61,7 +61,7 @@ const SidebarProvider = React.forwardRef(({ defaultOpen = true, open: openProp, 
           "--sidebar-width": SIDEBAR_WIDTH,
           "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
         }}
-        className="group/sidebar-wrapper flex min-h-screen w-full"
+        className="group/sidebar-wrapper flex min-h-screen"
         ref={ref}
         {...props}
       >
@@ -80,7 +80,7 @@ const Sidebar = React.forwardRef(({ side = "left", variant = "default", classNam
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent
           side={side}
-          className="w-[--sidebar-width] p-0"
+          className="w-[var(--sidebar-width,75%)] max-w-[320px] p-0"
         >
           <div className="flex h-full w-full flex-col">
             {children}
