@@ -5,12 +5,12 @@ import { Check, Clock, Edit } from "lucide-react"
 export default function MealCard({ meal }) {
   return (
     <Card className="overflow-hidden">
-      <div className="h-32 bg-cover bg-center" style={{ backgroundImage: `url(${meal.image})` }} />
+      {/* <div className="h-32 bg-cover bg-center" style={{ backgroundImage: `url(${meal.image})` }} /> */}
       <CardHeader className="p-3 pb-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">{meal.type}</span>
-            <span className="text-xs text-muted-foreground ml-2 flex items-center">
+            <span className="text-xl font-medium bg-primary/10 text-primary py-0.5 rounded-full">{meal.type}</span>
+            <span className="text-xl text-muted-foreground ml-2 flex items-center">
               <Clock className="h-3 w-3 mr-1" />
               {meal.time}
             </span>

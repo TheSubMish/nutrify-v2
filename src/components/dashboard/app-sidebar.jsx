@@ -158,7 +158,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                   <SidebarMenuButton asChild>
                     <a href="/chat">
                       <MessageSquare className="h-4 w-4" />
-                      <span>AI Nutrition Coach</span>
+                      <span>Nutrition Coach</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -187,7 +187,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                         <span>{meal.name}</span>
                         <span className="ml-auto flex items-center text-xs">
                           {meal.completed ? (
-                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                            <Badge variant="outline" className="bg-[#147870] text-white py-1">
                               Completed
                             </Badge>
                           ) : (

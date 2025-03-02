@@ -117,7 +117,7 @@ export default function Dashboard() {
                 dinner={520}
               />
               <NutritionChart protein={102} carbs={120} fat={55} proteinGoal={120} carbsGoal={150} fatGoal={65} />
-              <WaterIntake consumed={5} goal={8} />
+              <WaterIntake consumed={7} goal={8} />
             </div>
 
             <div className="mt-8">
@@ -135,14 +135,14 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">AI Recommendations</h2>
               <div className="space-y-4">
                 {recommendations.map((rec) => (
                   <AIRecommendation key={rec.id} recommendation={rec} />
                 ))}
               </div>
-            </div>
+            </div> */}
           </TabsContent>
         </Tabs>
       </main>
