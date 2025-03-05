@@ -12,12 +12,13 @@ export default function WaterIntake({ consumed, goal }) {
       </CardHeader>
       <CardContent>
         <div className="flex justify-center mb-4">
-          <div className="relative w-24 h-24 overflow-hidden">
-            <div className="absolute inset-0 rounded-full border-4 border-blue-200"></div>
+          <div className="relative w-24 h-24">
+            <div className="absolute inset-0 rounded-full border-4 border-blue-200 overflow-hidden">
             <div
               className="absolute bottom-0 left-0 right-0 bg-blue-400 rounded-b-full transition-all duration-500"
               style={{ height: `${percentage}%`, borderRadius: percentage === 100 ? "9999px" : "0 0 9999px 9999px" }}
             ></div>
+            </div>
             <div className="absolute inset-0 flex items-center justify-center flex-col">
               <Droplets className="h-6 w-6 text-blue-00 mb-1" />
               <span className="font-bold text-lg">

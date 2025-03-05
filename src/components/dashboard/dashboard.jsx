@@ -117,7 +117,7 @@ export default function Dashboard() {
                 dinner={520}
               />
               <NutritionChart protein={102} carbs={120} fat={55} proteinGoal={120} carbsGoal={150} fatGoal={65} />
-              <WaterIntake consumed={7} goal={8} />
+              <WaterIntake consumed={5} goal={8} />
             </div>
 
             <div className="mt-8">
