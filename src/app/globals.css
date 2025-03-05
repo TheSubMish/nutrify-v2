@@ -46,6 +46,18 @@ body {
   background: var(--background);
 }
 
+.primary {
+  color: var(--primary);
+}
+
+.secondary {
+  color: var(--secondary);
+}
+
+.tertiary {
+  color: var(--accent);
+}
+
 .primary-bg {
   color: white;
   background: var(--primary);
