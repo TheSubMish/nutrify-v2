@@ -42,6 +42,25 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.background {
+  background: var(--background);
+}
+
+.primary-bg {
+  color: white;
+  background: var(--primary);
+}
+
+.secondary-bg {
+  color: white;
+  background: var(--secondary);
+}
+
+.tertiary-bg {
+  color: white;
+  background: var(--accent);
+}
+
 /* Utility Classes */
 .btn-primary {
   background-color: var(--primary);
@@ -52,6 +71,13 @@ body {
 
 .btn-secondary {
   background-color: var(--secondary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+}
+
+.btn-tertiary {
+  background-color: var(--accent);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;

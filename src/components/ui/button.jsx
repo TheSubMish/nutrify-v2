@@ -5,6 +5,7 @@ const Button = ({ children, variant = "primary", className = "", ...props }) => 
     const variantStyles = {
       primary: "btn-primary",
       secondary: "btn-secondary",
+      tertiary: "btn-tertiary",
     }
   
     const sizeStyles = {
