@@ -96,7 +96,7 @@ export function AppSidebar({ userData = defaultUserData }) {
             height={48}
             className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
           /> */}
-          <span className="text-center">Nutrifyme</span>
+          <span className="text-center slackey-regular secondary">Nutrifyme</span>
         </Link>
         <div
           className="md:hidden cursor-pointer z-20"
@@ -156,7 +156,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href="/chat">
+                    <a href="/dashboard/chat">
                       <MessageSquare className="h-4 w-4" />
                       <span>Nutrition Coach</span>
                     </a>
@@ -164,7 +164,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href="/profile">
+                    <a href="/dashboard/profile">
                       <User2 className="h-4 w-4" />
                       <span>My Profile</span>
                     </a>
@@ -182,7 +182,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                 {userData.mealTypes.map((meal) => (
                   <SidebarMenuItem key={meal.name}>
                     <SidebarMenuButton asChild>
-                      <a href={`/meals/${meal.name.toLowerCase()}`}>
+                      <a href={`/dashboard/meals/${meal.name.toLowerCase()}`}>
                         <Utensils className="h-4 w-4" />
                         <span>{meal.name}</span>
                         <span className="ml-auto flex items-center text-xs">
@@ -217,7 +217,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                     {userData.weekDays.map((day) => (
                       <SidebarMenuItem key={day.day}>
                         <SidebarMenuButton asChild isActive={day.isActive} onClick={(e) => e.stopPropagation()}>
-                          <a href={`/schedule/${day.day.toLowerCase()}`}>
+                          <a href={`/dashboard/schedule/${day.day.toLowerCase()}`}>
                             <Calendar className="h-4 w-4" />
                             <span>{day.day}</span>
                             {day.isActive && <ChevronRight className="ml-auto h-4 w-4" />}
@@ -237,7 +237,7 @@ export function AppSidebar({ userData = defaultUserData }) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <a href="/settings">
+                <a href="/dashboard/settings">
                   <Settings className="h-4 w-4" />
                   <span>Settings</span>
                 </a>

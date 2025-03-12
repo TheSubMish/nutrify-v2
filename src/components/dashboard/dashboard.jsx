@@ -4,7 +4,7 @@ import { useState } from "react"
 import { AppSidebar } from "./app-sidebar"
 import MealCard from "./meal-card"
 import NutritionChart from "./nutrition-chart"
-import AIRecommendation from "./ai-recommendation"
+// import AIRecommendation from "./ai-recommendation"
 import CalorieTracker from "./calorie-tracker"
 import WaterIntake from "./water-intake"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
@@ -85,7 +85,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-background">
-      <AppSidebar />
+      {/* <AppSidebar /> */}
       <main className="flex-1 overflow-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -93,10 +93,10 @@ export default function Dashboard() {
             <p className="text-muted-foreground">Monday, March 1, 2025</p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" size="sm">
+            {/* <Button variant="outline" size="sm">
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh Plan
-            </Button>
+            </Button> */}
             <Button size="sm">
               <Zap className="mr-2 h-4 w-4" />
               Generate New Plan

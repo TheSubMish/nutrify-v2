@@ -58,8 +58,8 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <AppSidebar />
+    <div className="flex h-screen bg-background overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+      {/* <AppSidebar /> */}
       <main className="flex-1  p-6">
         <div className="flex items-center justify-between mb-6">
           <div>

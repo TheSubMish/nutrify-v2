@@ -42,14 +42,14 @@ function Navbar() {
           href="/"
           className="flex items-center gap-2 text-2xl md:text-3xl lg:text-4xl font-bold z-10 gabarito-uniquifier"
         >
-          <Image
+          {/* <Image
             src="/logo.png"
             alt="Nutrifyme Logo"
             width={48}
             height={48}
             className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
-          />
-          <span>Nutrifyme</span>
+          /> */}
+          <span className="slackey-regular secondary">Nutrifyme</span>
         </Link>
 
         {/* Hamburger Menu */}

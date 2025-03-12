@@ -92,7 +92,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-background">
-      <AppSidebar />
+      {/* <AppSidebar /> */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <ChatHeader />
 
