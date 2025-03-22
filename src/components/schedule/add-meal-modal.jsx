@@ -1,0 +1,181 @@
+"use client"
+
+import { useState } from "react"
+import { format } from "date-fns"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import Button from "@/components/ui/button"
+import Input from "@/components/ui/input"
+import Label from "@/components/ui/Label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { CalendarIcon } from "lucide-react"
+
+export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, selectedTime }) {
+  const [mealData, setMealData] = useState({
+    title: "",
+    date: selectedDate || new Date(),
+    startTime: selectedTime || "08:00",
+    endTime: selectedTime
+      ? `${Number.parseInt(selectedTime.split(":")[0])}:${(Number.parseInt(selectedTime.split(":")[1]) + 30) % 60}`.padStart(
+          5,
+          "0",
+        )
+      : "08:30",
+    type: "breakfast",
+    calories: "",
+    protein: "",
+    carbs: "",
+    fat: "",
+  })
+
+  const handleChange = (field, value) => {
+    setMealData({
+      ...mealData,
+      [field]: value,
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSave(mealData)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Add New Meal</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="title">Meal Name</Label>
+            <Input
+              id="title"
+              value={mealData.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              placeholder="e.g., Greek Yogurt Bowl"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label>Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(mealData.date, "PPP")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={mealData.date}
+                    onSelect={(date) => handleChange("date", date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="type">Meal Type</Label>
+              <Select value={mealData.type} onValueChange={(value) => handleChange("type", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select meal type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="breakfast">Breakfast</SelectItem>
+                  <SelectItem value="lunch">Lunch</SelectItem>
+                  <SelectItem value="dinner">Dinner</SelectItem>
+                  <SelectItem value="snack">Snack</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="startTime">Start Time</Label>
+              <Input
+                id="startTime"
+                type="time"
+                value={mealData.startTime}
+                onChange={(e) => handleChange("startTime", e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="endTime">End Time</Label>
+              <Input
+                id="endTime"
+                type="time"
+                value={mealData.endTime}
+                onChange={(e) => handleChange("endTime", e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="calories">Calories</Label>
+              <Input
+                id="calories"
+                type="number"
+                value={mealData.calories}
+                onChange={(e) => handleChange("calories", e.target.value)}
+                placeholder="kcal"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="protein">Protein</Label>
+              <Input
+                id="protein"
+                type="number"
+                value={mealData.protein}
+                onChange={(e) => handleChange("protein", e.target.value)}
+                placeholder="g"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="carbs">Carbs</Label>
+              <Input
+                id="carbs"
+                type="number"
+                value={mealData.carbs}
+                onChange={(e) => handleChange("carbs", e.target.value)}
+                placeholder="g"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="fat">Fat</Label>
+              <Input
+                id="fat"
+                type="number"
+                value={mealData.fat}
+                onChange={(e) => handleChange("fat", e.target.value)}
+                placeholder="g"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">Save Meal</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
