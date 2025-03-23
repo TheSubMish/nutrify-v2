@@ -65,7 +65,7 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
               <Label>Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="justify-start text-left font-normal">
+                  <Button variant="outline" className="justify-start text-left font-normal background">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {format(mealData.date, "PPP")}
                   </Button>
@@ -76,6 +76,7 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
                     selected={mealData.date}
                     onSelect={(date) => handleChange("date", date)}
                     initialFocus
+                    className="background"
                   />
                 </PopoverContent>
               </Popover>
@@ -87,7 +88,7 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
                 <SelectTrigger>
                   <SelectValue placeholder="Select meal type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="background">
                   <SelectItem value="breakfast">Breakfast</SelectItem>
                   <SelectItem value="lunch">Lunch</SelectItem>
                   <SelectItem value="dinner">Dinner</SelectItem>
