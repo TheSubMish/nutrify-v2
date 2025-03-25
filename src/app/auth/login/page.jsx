@@ -1,75 +1,51 @@
-"use client"
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { toast } from "sonner";
+
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/auth/card";
 import Label from "@/components/ui/Label";
 import Link from "next/link";
-import { ArrowLeft } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
-import { toast } from "sonner";
-
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
+    const supabase = createClientComponentClient();
+
     const [formData, setFormData] = useState({
-        email: '',
-        password: ''
+        email: "",
+        password: "",
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState('');
-
-    useEffect(() => {
-        // Check if user just registered
-        if (router.query?.registered === 'true') {
-            setSuccessMessage('Account created successfully! Please login.');
-        }
-    }, [router.query]);
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
-            [e.target.id]: e.target.value
+            [e.target.id]: e.target.value,
         });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
+        setLoading(true);
 
         try {
-            setLoading(true);
-            
-            // Sign in with Supabase
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: formData.email,
                 password: formData.password,
             });
 
             if (error) throw error;
-            const { data: { session } } = await supabase.auth.getSession();
-            // If successful, redirect to dashboard
-            if (data?.user) {
-                // Store token in localStorage (Supabase handles this automatically)
-                toast.success("Logged in successfully");
 
-                console.log("Session Before Saving: ", session);
-                localStorage.setItem("session", JSON.stringify(session));
-                console.log("Session After Saving: ", localStorage.getItem("session"));
+            toast.success("Logged in successfully");
 
-                setTimeout(() => {
-                    router.push('/dashboard');
-                }, 500);
-            }
+            router.push("/dashboard");
         } catch (err) {
             toast.error(err.message || "Invalid email or password");
-            // setError(err.message || "Invalid email or password");
         } finally {
             setLoading(false);
         }
@@ -90,34 +66,24 @@ export default function LoginPage() {
                     <CardContent>
                         <form onSubmit={handleSubmit}>
                             <div className="space-y-4">
-                                {error && (
-                                    <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">
-                                        {error}
-                                    </div>
-                                )}
-                                {successMessage && (
-                                    <div className="p-3 bg-green-100 text-green-700 rounded-md text-sm">
-                                        {successMessage}
-                                    </div>
-                                )}
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email</Label>
-                                    <Input 
-                                        id="email" 
-                                        type="email" 
-                                        placeholder="Enter your email" 
-                                        required 
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="Enter your email"
+                                        required
                                         value={formData.email}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input 
-                                        id="password" 
-                                        type="password" 
-                                        placeholder="Enter your password" 
-                                        required 
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="Enter your password"
+                                        required
                                         value={formData.password}
                                         onChange={handleChange}
                                     />
@@ -127,13 +93,8 @@ export default function LoginPage() {
                                         Forgot password?
                                     </Link>
                                 </div>
-                                <Button 
-                                    type="submit" 
-                                    variant="secondary" 
-                                    className="w-full mt-4"
-                                    disabled={loading}
-                                >
-                                    {loading ? 'Logging in...' : 'Login'}
+                                <Button type="submit" variant="secondary" className="w-full mt-4" disabled={loading}>
+                                    {loading ? "Logging in..." : "Login"}
                                 </Button>
                             </div>
                         </form>

@@ -7,14 +7,9 @@ export async function middleware(req) {
 
   const { data: { session } } = await supabase.auth.getSession();
 
-  console.log('Middleware Session:', session);
-
   const path = req.nextUrl.pathname;
   const isAuthPath = path.startsWith("/auth");
-  const isProtectedPath = 
-    path.startsWith("/dashboard") || 
-    path.startsWith("/profile") || 
-    path.startsWith("/settings");
+  const isProtectedPath = path.startsWith("/dashboard") || path.startsWith("/profile") || path.startsWith("/settings");
 
   if (isProtectedPath && !session) {
     console.log("Redirecting to login - No session found");
