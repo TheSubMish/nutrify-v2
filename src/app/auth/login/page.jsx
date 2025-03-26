@@ -11,6 +11,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import Label from "@/components/ui/Label";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useAppStore } from "@/store";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -40,6 +41,14 @@ export default function LoginPage() {
             });
 
             if (error) throw error;
+
+            const userData = {
+                id: data.user.id,
+                email: data.user.email,
+                name: data.user.user_metadata?.full_name || "User",
+            };
+
+            useAppStore.getState().setUser(userData);
 
             toast.success("Logged in successfully");
 
