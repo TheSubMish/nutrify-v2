@@ -1,18 +1,13 @@
 "use client"
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/auth/card";
 import Label from "@/components/ui/Label";
 import Link from "next/link";
 import { ArrowLeft } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 import { toast } from "sonner";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from '@/supabase.config.mjs';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');

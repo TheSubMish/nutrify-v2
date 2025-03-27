@@ -1,21 +1,103 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { Send, User, Bot, Sparkles } from "lucide-react"
+import { Send, User, Bot, Sparkles, LogOut } from "lucide-react"
+import { useAppStore } from "@/store"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/supabase.config"
+import { toast } from "sonner"
+import { callAi } from "@/utils/callAi"
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+
+const TypingAnimation = ({ text, speed = 10 }) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(prevText => prevText + text[currentIndex]);
+        setCurrentIndex(prevIndex => prevIndex + 1);
+      }, speed);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, text, speed]);
+
+  return (
+    <ReactMarkdown className="prose prose-lg" remarkPlugins={[remarkGfm]}>
+      {displayedText}
+    </ReactMarkdown>
+  );
+};
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: "bot",
-      content: "Hello! I'm your nutrition assistant. How can I help you with your diet and health goals today?",
-      timestamp: new Date().toISOString(),
-    },
-  ])
+  const router = useRouter()
+  const { user } = useAppStore()
+  const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
+  const [response, setResponse] = useState("");
+
+  // Redirect to login if no user
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+    }
+  }, [user, router])
+
+  useEffect(()=>{
+    const fetchConversations = async () => {
+      const { data, error } = await supabase
+        .from("conversations")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching conversations:", error.message);
+        toast.error("Failed to fetch conversations");
+      } else {
+        console.log("Conversations fetched successfully");
+        console.log(data);
+        if (data.length > 0){
+          setMessages(data);
+        } else {
+          setMessages([
+            {
+              id: 1,
+              user_id: user?.id,
+              role: "bot",
+              content: "Hello! I'm your nutrition assistant. How can I help you with your diet and health goals today?",
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+        }
+      }
+    };
+
+    fetchConversations();
+  },[])
+
+  const saveConversation = async (role, content) => {
+    const { error } = await supabase.from("conversations").insert([
+      {
+          user_id: user?.id,
+          role,
+          content,
+      },
+    ]);
+
+    if (error) {
+        console.error("Error saving conversation:", error.message);
+        toast.error("Failed to save conversation");
+    } else {
+        console.log("Conversation saved successfully");
+    }
+  };
 
   const suggestions = [
     "How many calories should I eat?",
@@ -26,6 +108,12 @@ export default function ChatPage() {
     "Benefits of intermittent fasting",
   ]
 
+  const handleSuggestionClick = (suggestion) => {
+    setInputValue(suggestion)
+    // Focus the input after setting the value
+    document.getElementById("chat-input").focus()
+  }
+
   useEffect(() => {
     scrollToBottom()
   }, [messages])
@@ -34,60 +122,41 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault()
     if (!inputValue.trim()) return
 
-    // Add user message
     const userMessage = {
       id: messages.length + 1,
+      user_id: user?.id,
       role: "user",
       content: inputValue,
-      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     }
+
+    console.log(supabase.auth.getUser())
 
     setMessages((prev) => [...prev, userMessage])
     setInputValue("")
     setIsLoading(true)
+    saveConversation("user", inputValue)
 
-    // Simulate bot response after a delay
-    setTimeout(() => {
-      const botResponse = {
-        id: messages.length + 2,
-        role: "bot",
-        content: generateResponse(inputValue),
-        timestamp: new Date().toISOString(),
-      }
-      setMessages((prev) => [...prev, botResponse])
-      setIsLoading(false)
-    }, 1000)
-  }
+    // Call AI to generate response
+    const prompt = `${inputValue} \n if this is not related to health, nutrition or diet, please ignore this message. send a message "Failed to get response please ask question related to health, nutrition or diet" to get a response related to health, nutrition or diet.`
 
-  const handleSuggestionClick = (suggestion) => {
-    setInputValue(suggestion)
-    // Focus the input after setting the value
-    document.getElementById("chat-input").focus()
-  }
+    await callAi(prompt, setResponse)
 
-  // Simple response generator - in a real app, this would be an API call
-  const generateResponse = (message) => {
-    const lowerMessage = message.toLowerCase()
-
-    if (lowerMessage.includes("calorie")) {
-      return "Your daily calorie needs depend on your age, gender, weight, height, and activity level. For an average adult, it's around 2000-2500 calories for men and 1600-2000 for women. Would you like me to calculate a more personalized estimate for you?"
-    } else if (lowerMessage.includes("protein")) {
-      return "Great sources of protein include: chicken breast, turkey, fish, eggs, Greek yogurt, cottage cheese, tofu, lentils, chickpeas, and quinoa. For most active adults, aim for 0.8-1g of protein per pound of body weight daily."
-    } else if (lowerMessage.includes("sugar") || lowerMessage.includes("cravings")) {
-      return "To reduce sugar cravings: 1) Stay hydrated, 2) Eat regular balanced meals with protein, 3) Get enough sleep, 4) Try fruit when craving sweets, 5) Include healthy fats in your diet, and 6) Consider supplements like chromium or glutamine after consulting with a healthcare provider."
-    } else if (lowerMessage.includes("pre-workout") || lowerMessage.includes("before workout")) {
-      return "Good pre-workout meals include: banana with peanut butter, oatmeal with berries, Greek yogurt with granola, or a small turkey sandwich. Aim to eat 1-3 hours before exercising, with a focus on carbs for energy and some protein."
-    } else if (lowerMessage.includes("water")) {
-      return "The general recommendation is to drink about 8 cups (64 ounces) of water daily, but your needs may vary based on activity level, climate, and overall health. A good rule is to drink enough so your urine is pale yellow."
-    } else if (lowerMessage.includes("fasting") || lowerMessage.includes("intermittent")) {
-      return "Intermittent fasting benefits may include weight loss, improved metabolic health, reduced inflammation, and potentially increased longevity. Common methods include 16:8 (16 hours fasting, 8 hour eating window) or 5:2 (5 normal days, 2 very low calorie days)."
-    } else {
-      return "That's a great question about nutrition and health. Would you like me to provide more specific information or recommendations based on your personal health goals?"
+    
+    const botResponse = {
+      id: messages.length + 2,
+      user_id: user?.id,
+      role: "bot",
+      content: response,
+      created_at: new Date().toISOString(),
     }
+    setMessages((prev) => [...prev, botResponse])
+    setIsLoading(false)
+    saveConversation("bot", response)
   }
 
   return (
@@ -147,6 +216,23 @@ function ChatHeader() {
 
 function ChatMessage({ message }) {
   const isBot = message.role === "bot"
+  const [isTyping, setIsTyping] = useState(false);
+  const [showFullText, setShowFullText] = useState(false);
+  const responseText = typeof message.content === 'string' ? message.content : '';
+
+  useEffect(() => {
+    if (responseText) {
+      setIsTyping(true);
+      setShowFullText(false);
+      const timer = setTimeout(() => {
+        setIsTyping(false);
+        setShowFullText(true);
+      }, responseText.length * 50 + 500); // Adjust for animation duration
+
+      return () => clearTimeout(timer);
+    }
+  }, [responseText]);
+
 
   return (
     <div className={`flex mb-4 ${isBot ? "" : "justify-end"}`}>
@@ -158,9 +244,17 @@ function ChatMessage({ message }) {
         </div>
 
         <div className={`mx-2 px-4 py-2 rounded-lg ${isBot ? "bg-muted" : "bg-primary text-primary-foreground"}`}>
-          <p className="text-sm">{message.content}</p>
+          <div className="text-sm whitespace-pre-wrap">
+            {isTyping ? (
+              <TypingAnimation text={responseText} />
+            ) : (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+            )}
+          </div>
           <span className="text-xs opacity-70 mt-1 block">
-            {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
         </div>
       </div>

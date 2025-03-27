@@ -7,13 +7,13 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import Label from "@/components/ui/Label";
 import Link from "next/link";
 import { ArrowLeft } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 import { toast } from "sonner";
+import { supabase } from "@/supabase.config";
 
 // Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function RegisterPage() {
     const router = useRouter();
