@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { callAi } from "@/utils/callAi"
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ConversationLoadingSkeleton } from "@/components/chat/loading-skeleton"
 
 
 const TypingAnimation = ({ text, speed = 10 }) => {
@@ -39,6 +40,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true)
   const messagesEndRef = useRef(null)
 
   // Redirect to login if no user
@@ -50,6 +52,9 @@ export default function ChatPage() {
 
   useEffect(()=>{
     const fetchConversations = async () => {
+
+      setIsLoadingConversations(true)
+
       const { data, error } = await supabase
         .from("conversations")
         .select("*")
@@ -76,6 +81,8 @@ export default function ChatPage() {
           ]);
         }
       }
+
+      setIsLoadingConversations(false)
     };
 
     fetchConversations();
@@ -156,6 +163,10 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, botResponse])
     setIsLoading(false)
     saveConversation("bot", aiResponse)
+  }
+
+  if (isLoadingConversations) {
+    return <ConversationLoadingSkeleton />
   }
 
   return (

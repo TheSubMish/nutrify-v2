@@ -170,7 +170,7 @@ function Navbar() {
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full primary-bg">
+                      <div className="flex items-center justify-center w-9 h-9 rounded-full tertiary-bg">
                         {getUserInitial()}
                       </div>
                     )}
