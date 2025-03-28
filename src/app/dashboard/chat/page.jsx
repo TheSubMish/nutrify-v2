@@ -1,39 +1,42 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, User, Bot, Sparkles, LogOut } from "lucide-react"
+import { Send, User, Bot, Sparkles } from "lucide-react"
 import { useAppStore } from "@/store"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/supabase.config"
 import { toast } from "sonner"
-import { callAi } from "@/utils/callAi"
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { ConversationLoadingSkeleton } from "@/components/chat/loading-skeleton"
-import { set } from "date-fns"
-
+import { fetchConversations } from "@/app/actions/chat"
 
 const TypingAnimation = ({ text, speed = 10 }) => {
-  const [displayedText, setDisplayedText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("")
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
     if (currentIndex < text.length) {
       const timer = setTimeout(() => {
-        setDisplayedText(prevText => prevText + text[currentIndex]);
-        setCurrentIndex(prevIndex => prevIndex + 1);
-      }, speed);
+        setDisplayedText((prevText) => prevText + text[currentIndex])
+        setCurrentIndex((prevIndex) => prevIndex + 1)
+      }, speed)
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer)
     }
-  }, [currentIndex, text, speed]);
+  }, [currentIndex, text, speed])
 
-  return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-      {displayedText}
-    </ReactMarkdown>
-  );
-};
+  return <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayedText}</ReactMarkdown>
+}
+
+
+const defaultSuggestions = [
+  "How many calories should I eat?",
+  "What foods are high in protein?",
+  "How can I reduce sugar cravings?",
+  "Best pre-workout meals?",
+  "How much water should I drink daily?",
+  "Benefits of intermittent fasting",
+];
 
 export default function ChatPage() {
   const router = useRouter()
@@ -42,39 +45,39 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingConversations, setIsLoadingConversations] = useState(true)
+  const [retryAfter, setRetryAfter] = useState(0)
+  const [remainingRequests, setRemainingRequests] = useState(10)
   const messagesEndRef = useRef(null)
-  const [suggestions, setSuggestions] = useState([
-    "How many calories should I eat?",
-    "What foods are high in protein?",
-    "How can I reduce sugar cravings?",
-    "Best pre-workout meals?",
-    "How much water should I drink daily?",
-    "Benefits of intermittent fasting",
-  ])
+  const [suggestions, setSuggestions] = useState(() => {
+    const storedSuggestions = localStorage.getItem("suggestions");
+    return storedSuggestions ? JSON.parse(storedSuggestions) : defaultSuggestions;
+  });
 
   // Redirect to login if no user
   useEffect(() => {
     if (!user) {
-      router.push('/login')
+      router.push("/login")
     }
   }, [user, router])
 
-  useEffect(()=>{
-    const fetchConversations = async () => {
+  // Store suggestions in local storage whenever they change
+  useEffect(() => {
+    localStorage.setItem("suggestions", JSON.stringify(suggestions));
+  }, [suggestions]);
+
+  useEffect(() => {
+    const loadConversations = async () => {
+      if (!user?.id) return
 
       setIsLoadingConversations(true)
 
-      const { data, error } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: true });
+      try {
+        const { data, error } = await fetchConversations(user.id)
 
-      if (error) {
-        toast.error("Failed to fetch conversations");
-      } else {
-        if (data.length > 0){
-          setMessages(data.map(msg => ({ ...msg, isFetched: true })));
+        if (error) {
+          toast.error(error)
+        } else if (data && data.length > 0) {
+          setMessages(data.map((msg) => ({ ...msg, isFetched: true })))
         } else {
           setMessages([
             {
@@ -83,30 +86,19 @@ export default function ChatPage() {
               role: "bot",
               content: "Hello! I'm your nutrition assistant. How can I help you with your diet and health goals today?",
               timestamp: new Date().toISOString(),
+              created_at: new Date().toISOString(),
             },
-          ]);
+          ])
         }
+      } catch (error) {
+        toast.error("Failed to fetch conversations")
+      } finally {
+        setIsLoadingConversations(false)
       }
-
-      setIsLoadingConversations(false)
-    };
-
-    fetchConversations();
-  },[])
-
-  const saveConversation = async (role, content) => {
-    const { error } = await supabase.from("conversations").insert([
-      {
-          user_id: user?.id,
-          role,
-          content,
-      },
-    ]);
-
-    if (error) {
-        toast.error("Failed to save conversation");
     }
-  };
+
+    loadConversations()
+  }, [user])
 
   const handleSuggestionClick = (suggestion) => {
     setInputValue(suggestion)
@@ -122,12 +114,29 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
+  // Countdown timer for rate limit
+  useEffect(() => {
+    if (retryAfter <= 0) return
+
+    const timer = setInterval(() => {
+      setRetryAfter((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [retryAfter])
+
   const handleSendMessage = async (e) => {
     e.preventDefault()
-    if (!inputValue.trim()) return
+    if (!inputValue.trim() || isLoading || retryAfter > 0) return
 
     const userMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       user_id: user?.id,
       role: "user",
       content: inputValue,
@@ -137,37 +146,54 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage])
     setInputValue("")
     setIsLoading(true)
-    saveConversation("user", inputValue)
 
-    // Call AI to generate response
-    const prompt = `${inputValue} \n if this is not related to health, nutrition or diet, please ignore this message. send a message "Failed to get response please ask question related to health, nutrition or diet" to get a response related to health, nutrition or diet.`
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          message: inputValue,
+          generateSuggestions: true,
+        }),
+      })
 
-    const aiResponse = await callAi(prompt);
-    
-    const botResponse = {
-      id: messages.length + 2,
-      user_id: user?.id,
-      role: "bot",
-      content: aiResponse,
-      created_at: new Date().toISOString(),
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          setRetryAfter(data.retryAfter || 60)
+          toast.error(`Rate limit exceeded. Please try again in ${data.retryAfter} seconds.`)
+        } else {
+          toast.error(data.error || "Failed to get response")
+        }
+        return
+      }
+
+      const botResponse = {
+        id: Date.now() + 1,
+        user_id: user?.id,
+        role: "bot",
+        content: data.response,
+        created_at: new Date().toISOString(),
+      }
+
+      setMessages((prev) => [...prev, botResponse])
+
+      if (data.suggestions && data.suggestions.length > 0) {
+        setSuggestions(data.suggestions)
+      }
+
+      if (data.remainingRequests !== undefined) {
+        setRemainingRequests(data.remainingRequests)
+      }
+    } catch (error) {
+      toast.error("Failed to communicate with the server")
+    } finally {
+      setIsLoading(false)
     }
-    setMessages((prev) => [...prev, botResponse])
-    setIsLoading(false)
-    saveConversation("bot", aiResponse)
-
-    // Call AI to generate response
-    if (!aiResponse.includes("Failed")) {
-        const promptSuggestion = `${aiResponse} \n Based on this, create a array of size 6 suggestions for the user to ask. Like this: ${suggestions} just provide the suggestions in the array format.`;
-        const suggessionResponse = await callAi(promptSuggestion);
-        console.log(suggessionResponse);
-        
-        const cleanedSuggestions = suggessionResponse
-        .split("\n")
-        .filter((s, index) => index !== 0 && s.trim().length > 0);
-
-        setSuggestions(cleanedSuggestions);
-    }
-  
   }
 
   if (isLoadingConversations) {
@@ -176,13 +202,12 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* <AppSidebar /> */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <ChatHeader />
 
         <div className="flex-1 overflow-y-auto p-4">
           <div className="">
-            {messages.map((message,index) => (
+            {messages.map((message, index) => (
               <ChatMessage key={message.id} message={message} isLastMessage={index === messages.length - 1} />
             ))}
 
@@ -202,6 +227,8 @@ export default function ChatPage() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onSubmit={handleSendMessage}
                 isLoading={isLoading}
+                isRateLimited={retryAfter > 0}
+                retryAfter={retryAfter}
               />
             </form>
           </div>
@@ -231,31 +258,33 @@ function ChatHeader() {
 
 function ChatMessage({ message, isLastMessage }) {
   const isBot = message.role === "bot"
-  const [isTyping, setIsTyping] = useState(false);
-  const [showFullText, setShowFullText] = useState(false);
-  const responseText = typeof message.content === 'string' ? message.content : '';
-  const prevMessagesRef = useRef(new Set());
+  const [isTyping, setIsTyping] = useState(false)
+  const [showFullText, setShowFullText] = useState(false)
+  const responseText = typeof message.content === "string" ? message.content : ""
+  const prevMessagesRef = useRef(new Set())
 
   useEffect(() => {
     if (isBot && responseText && !prevMessagesRef.current.has(responseText)) {
-      prevMessagesRef.current.add(responseText);
-  
+      prevMessagesRef.current.add(responseText)
+
       if (!message.isFetched) {
-        setIsTyping(true);
-        setShowFullText(false);
-        const timer = setTimeout(() => {
-          setIsTyping(false);
-          setShowFullText(true);
-        }, responseText.length * 50 + 500);
-  
-        return () => clearTimeout(timer);
+        setIsTyping(true)
+        setShowFullText(false)
+        const timer = setTimeout(
+          () => {
+            setIsTyping(false)
+            setShowFullText(true)
+          },
+          responseText.length * 50 + 500,
+        )
+
+        return () => clearTimeout(timer)
       } else {
-        setIsTyping(false);
-        setShowFullText(true);
+        setIsTyping(false)
+        setShowFullText(true)
       }
     }
-  }, [responseText, message.isFetched]);
-  
+  }, [responseText, message.isFetched])
 
   return (
     <div className={`flex mb-4 ${isBot ? "" : "justify-end"}`}>
@@ -263,7 +292,11 @@ function ChatMessage({ message, isLastMessage }) {
         <div
           className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${isBot ? "bg-muted" : "bg-primary text-primary-foreground"}`}
         >
-          {isBot ? <Bot className="h-6 w-6 primary" /> : <User className="h-6 w-6 secondary border border-[#147870] rounded-full p-[2px]" />}
+          {isBot ? (
+            <Bot className="h-6 w-6 primary" />
+          ) : (
+            <User className="h-6 w-6 secondary border border-[#147870] rounded-full p-[2px]" />
+          )}
         </div>
 
         <div className={`mx-2 px-4 py-2 rounded-lg ${isBot ? "bg-muted" : "bg-primary text-primary-foreground"}`}>
@@ -271,9 +304,7 @@ function ChatMessage({ message, isLastMessage }) {
             {isTyping ? (
               <TypingAnimation text={responseText} />
             ) : (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {message.content}
-              </ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
             )}
           </div>
           <span className="text-xs opacity-70 mt-1 block">
@@ -285,7 +316,7 @@ function ChatMessage({ message, isLastMessage }) {
   )
 }
 
-function ChatInput({ value, onChange, onSubmit, isLoading }) {
+function ChatInput({ value, onChange, onSubmit, isLoading, isRateLimited, retryAfter }) {
   return (
     <div className="relative">
       <input
@@ -293,14 +324,18 @@ function ChatInput({ value, onChange, onSubmit, isLoading }) {
         type="text"
         value={value}
         onChange={onChange}
-        placeholder="Ask about nutrition, diet plans, or health tips..."
+        placeholder={
+          isRateLimited
+            ? `Rate limited. Try again in ${retryAfter}s...`
+            : "Ask about nutrition, diet plans, or health tips..."
+        }
         className="w-full p-3 pr-12 rounded-full border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-        disabled={isLoading}
+        disabled={isLoading || isRateLimited}
       />
       <button
         type="submit"
         className="absolute right-1.5 top-1.5 p-1.5 rounded-full bg-primary text-primary-foreground disabled:opacity-50"
-        disabled={isLoading || !value.trim()}
+        disabled={isLoading || !value.trim() || isRateLimited}
       >
         <Send className="h-5 w-5" />
       </button>
