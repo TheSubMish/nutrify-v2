@@ -4,7 +4,7 @@ const token = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 const endpoint = process.env.NEXT_PUBLIC_OPENAI_ENDPOINT;
 const modelName = process.env.NEXT_PUBLIC_OPENAI_MODENAME;
 
-export const callAi = async (prompt, setResponse) => {
+export const callAi = async (prompt) => {
 
     const client = new OpenAI({ baseURL: endpoint, apiKey: token, dangerouslyAllowBrowser: true });
 
@@ -20,16 +20,14 @@ export const callAi = async (prompt, setResponse) => {
             model: modelName
         });
 
-        console.log("AI Response:", response);
-
         if (response.choices?.length > 0) {
             const aiMessage = response.choices[0].message.content.trim();
-            return response.choices[0].message.content.trim();
+            return aiMessage;
         } else {
-            return "No response received from AI.";
+            return "Failed to get response";
         }
+
     } catch (error) {
-        console.error("Error calling OpenAI:", error);
-        return "Error communicating with AI.";
+        return "Failed to get response";
     }
 };

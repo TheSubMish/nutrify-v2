@@ -10,6 +10,7 @@ import { callAi } from "@/utils/callAi"
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ConversationLoadingSkeleton } from "@/components/chat/loading-skeleton"
+import { set } from "date-fns"
 
 
 const TypingAnimation = ({ text, speed = 10 }) => {
@@ -42,6 +43,14 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingConversations, setIsLoadingConversations] = useState(true)
   const messagesEndRef = useRef(null)
+  const [suggestions, setSuggestions] = useState([
+    "How many calories should I eat?",
+    "What foods are high in protein?",
+    "How can I reduce sugar cravings?",
+    "Best pre-workout meals?",
+    "How much water should I drink daily?",
+    "Benefits of intermittent fasting",
+  ])
 
   // Redirect to login if no user
   useEffect(() => {
@@ -62,11 +71,8 @@ export default function ChatPage() {
         .order("created_at", { ascending: true });
 
       if (error) {
-        console.error("Error fetching conversations:", error.message);
         toast.error("Failed to fetch conversations");
       } else {
-        console.log("Conversations fetched successfully");
-        console.log(data);
         if (data.length > 0){
           setMessages(data.map(msg => ({ ...msg, isFetched: true })));
         } else {
@@ -98,21 +104,9 @@ export default function ChatPage() {
     ]);
 
     if (error) {
-        console.error("Error saving conversation:", error.message);
         toast.error("Failed to save conversation");
-    } else {
-        console.log("Conversation saved successfully");
     }
   };
-
-  const suggestions = [
-    "How many calories should I eat?",
-    "What foods are high in protein?",
-    "How can I reduce sugar cravings?",
-    "Best pre-workout meals?",
-    "How much water should I drink daily?",
-    "Benefits of intermittent fasting",
-  ]
 
   const handleSuggestionClick = (suggestion) => {
     setInputValue(suggestion)
@@ -140,8 +134,6 @@ export default function ChatPage() {
       created_at: new Date().toISOString(),
     }
 
-    console.log(supabase.auth.getUser())
-
     setMessages((prev) => [...prev, userMessage])
     setInputValue("")
     setIsLoading(true)
@@ -151,7 +143,6 @@ export default function ChatPage() {
     const prompt = `${inputValue} \n if this is not related to health, nutrition or diet, please ignore this message. send a message "Failed to get response please ask question related to health, nutrition or diet" to get a response related to health, nutrition or diet.`
 
     const aiResponse = await callAi(prompt);
-    console.log("AI Response:", aiResponse);
     
     const botResponse = {
       id: messages.length + 2,
@@ -163,6 +154,20 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, botResponse])
     setIsLoading(false)
     saveConversation("bot", aiResponse)
+
+    // Call AI to generate response
+    if (!aiResponse.includes("Failed")) {
+        const promptSuggestion = `${aiResponse} \n Based on this, create a array of size 6 suggestions for the user to ask. Like this: ${suggestions} just provide the suggestions in the array format.`;
+        const suggessionResponse = await callAi(promptSuggestion);
+        console.log(suggessionResponse);
+        
+        const cleanedSuggestions = suggessionResponse
+        .split("\n")
+        .filter((s, index) => index !== 0 && s.trim().length > 0);
+
+        setSuggestions(cleanedSuggestions);
+    }
+  
   }
 
   if (isLoadingConversations) {
@@ -176,7 +181,7 @@ export default function ChatPage() {
         <ChatHeader />
 
         <div className="flex-1 overflow-y-auto p-4">
-          <div className="max-w-3xl mx-auto">
+          <div className="">
             {messages.map((message,index) => (
               <ChatMessage key={message.id} message={message} isLastMessage={index === messages.length - 1} />
             ))}
@@ -188,7 +193,7 @@ export default function ChatPage() {
         </div>
 
         <div className="border-t p-4">
-          <div className="max-w-3xl mx-auto">
+          <div className="">
             <ChatSuggestions suggestions={suggestions} onSuggestionClick={handleSuggestionClick} />
 
             <form onSubmit={handleSendMessage} className="mt-3">
@@ -256,7 +261,7 @@ function ChatMessage({ message, isLastMessage }) {
     <div className={`flex mb-4 ${isBot ? "" : "justify-end"}`}>
       <div className={`flex max-w-[80%] ${isBot ? "items-start" : "items-end flex-row-reverse"}`}>
         <div
-          className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${isBot ? "bg-primary/10 text-primary" : "bg-muted"}`}
+          className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${isBot ? "bg-muted" : "bg-primary text-primary-foreground"}`}
         >
           {isBot ? <Bot className="h-6 w-6 primary" /> : <User className="h-6 w-6 secondary border border-[#147870] rounded-full p-[2px]" />}
         </div>

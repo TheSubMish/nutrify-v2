@@ -21,14 +21,12 @@ export function AuthProvider({ children }) {
         const checkSession = async () => {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
-                console.log("Checked session:", session, "Error:", error);
                 if (session?.user) {
                 setUser(session.user);
                 } else {
                 setUser(null);
                 }
             } catch (err) {
-                console.error("Session check error:", err);
                 setUser(null);
             } finally {
                 setLoading(false);

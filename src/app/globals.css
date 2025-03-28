@@ -29,6 +29,8 @@
   --accent: #FF4081;
   --accent-warm: #FFD700;
   --cta: #8A2BE2;
+  --muted: #F5F5F5;
+  --muted-foreground: #A9A9A9;
 
   /* Background & Foreground */
   --foreground: #ffffff;
@@ -77,6 +79,10 @@ body {
 .tertiary-bg {
   color: white;
   background: var(--accent);
+}
+
+.bg-muted {
+  background-color: var(--muted);
 }
 
 /* Utility Classes */

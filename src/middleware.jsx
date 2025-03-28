@@ -12,12 +12,10 @@ export async function middleware(req) {
   const isProtectedPath = path.startsWith("/dashboard") || path.startsWith("/profile") || path.startsWith("/settings");
 
   if (isProtectedPath && !session) {
-    console.log("Redirecting to login - No session found");
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
   if (isAuthPath && session) {
-    console.log("Redirecting to dashboard - Session found");
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
