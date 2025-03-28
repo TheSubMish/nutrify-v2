@@ -46,6 +46,8 @@ export default function LoginPage() {
                 id: data.user.id,
                 email: data.user.email,
                 name: data.user.user_metadata?.full_name || "User",
+                avatar: data.user.user_metadata?.avatar_url || null,
+                created_at: data.user.created_at,
             };
 
             useAppStore.getState().setUser(userData);

@@ -27,7 +27,7 @@ const TypingAnimation = ({ text, speed = 10 }) => {
   }, [currentIndex, text, speed]);
 
   return (
-    <ReactMarkdown className="prose prose-lg" remarkPlugins={[remarkGfm]}>
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>
       {displayedText}
     </ReactMarkdown>
   );
@@ -40,7 +40,6 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
-  const [response, setResponse] = useState("");
 
   // Redirect to login if no user
   useEffect(() => {
@@ -64,7 +63,7 @@ export default function ChatPage() {
         console.log("Conversations fetched successfully");
         console.log(data);
         if (data.length > 0){
-          setMessages(data);
+          setMessages(data.map(msg => ({ ...msg, isFetched: true })));
         } else {
           setMessages([
             {
@@ -144,19 +143,19 @@ export default function ChatPage() {
     // Call AI to generate response
     const prompt = `${inputValue} \n if this is not related to health, nutrition or diet, please ignore this message. send a message "Failed to get response please ask question related to health, nutrition or diet" to get a response related to health, nutrition or diet.`
 
-    await callAi(prompt, setResponse)
-
+    const aiResponse = await callAi(prompt);
+    console.log("AI Response:", aiResponse);
     
     const botResponse = {
       id: messages.length + 2,
       user_id: user?.id,
       role: "bot",
-      content: response,
+      content: aiResponse,
       created_at: new Date().toISOString(),
     }
     setMessages((prev) => [...prev, botResponse])
     setIsLoading(false)
-    saveConversation("bot", response)
+    saveConversation("bot", aiResponse)
   }
 
   return (
@@ -167,8 +166,8 @@ export default function ChatPage() {
 
         <div className="flex-1 overflow-y-auto p-4">
           <div className="max-w-3xl mx-auto">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+            {messages.map((message,index) => (
+              <ChatMessage key={message.id} message={message} isLastMessage={index === messages.length - 1} />
             ))}
 
             {isLoading && <LoadingIndicator />}
@@ -214,25 +213,33 @@ function ChatHeader() {
   )
 }
 
-function ChatMessage({ message }) {
+function ChatMessage({ message, isLastMessage }) {
   const isBot = message.role === "bot"
   const [isTyping, setIsTyping] = useState(false);
   const [showFullText, setShowFullText] = useState(false);
   const responseText = typeof message.content === 'string' ? message.content : '';
+  const prevMessagesRef = useRef(new Set());
 
   useEffect(() => {
-    if (responseText) {
-      setIsTyping(true);
-      setShowFullText(false);
-      const timer = setTimeout(() => {
+    if (isBot && responseText && !prevMessagesRef.current.has(responseText)) {
+      prevMessagesRef.current.add(responseText);
+  
+      if (!message.isFetched) {
+        setIsTyping(true);
+        setShowFullText(false);
+        const timer = setTimeout(() => {
+          setIsTyping(false);
+          setShowFullText(true);
+        }, responseText.length * 50 + 500);
+  
+        return () => clearTimeout(timer);
+      } else {
         setIsTyping(false);
         setShowFullText(true);
-      }, responseText.length * 50 + 500); // Adjust for animation duration
-
-      return () => clearTimeout(timer);
+      }
     }
-  }, [responseText]);
-
+  }, [responseText, message.isFetched]);
+  
 
   return (
     <div className={`flex mb-4 ${isBot ? "" : "justify-end"}`}>

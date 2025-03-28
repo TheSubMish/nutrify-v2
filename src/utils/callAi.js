@@ -24,12 +24,12 @@ export const callAi = async (prompt, setResponse) => {
 
         if (response.choices?.length > 0) {
             const aiMessage = response.choices[0].message.content.trim();
-            setResponse(aiMessage);
+            return response.choices[0].message.content.trim();
         } else {
-            setResponse("No response received from AI.");
+            return "No response received from AI.";
         }
     } catch (error) {
         console.error("Error calling OpenAI:", error);
-        setResponse("Error communicating with AI.");
+        return "Error communicating with AI.";
     }
 };
