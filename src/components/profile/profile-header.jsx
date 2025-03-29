@@ -1,9 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import Button from "@/components/ui/button"
-import { Camera, Edit } from "lucide-react"
+import EditProfileDialog from "./edit-profile-dialog"
+import { useState } from "react"
+import { Edit } from "lucide-react"
 
-export default function ProfileHeader({ user }) {
+export default function ProfileHeader({ user, onEditClick }) {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  const handleProfileUpdate = (updatedUser) => {
+    setUser(updatedUser)
+  }
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -18,9 +26,9 @@ export default function ProfileHeader({ user }) {
                   .join("")}
               </AvatarFallback>
             </Avatar>
-            <div size="icon" variant="secondary" className="absolute top-10 left-10 h-8 w-8 rounded-full">
+            {/* <div size="icon" variant="secondary" className="absolute top-10 left-10 h-8 w-8 rounded-full">
               <Camera className="h-4 w-4" />
-            </div>
+            </div> */}
             {/* <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 h-8 w-8 rounded-full"> */}
               {/* <span className="sr-only">Change profile picture</span>
             </Button> */}
@@ -29,7 +37,7 @@ export default function ProfileHeader({ user }) {
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
               <h2 className="text-2xl font-bold">{user.name}</h2>
-              <Button variant="ghost" size="sm" className="h-8 gap-1">
+              <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={() => setIsEditDialogOpen(true)}>
                 <Edit className="h-3.5 w-3.5" />
                 Edit Profile
               </Button>
@@ -45,6 +53,12 @@ export default function ProfileHeader({ user }) {
               Manage Plan
             </Button>
           </div> */}
+          <EditProfileDialog
+            user={user}
+            isOpen={isEditDialogOpen}
+            onClose={() => setIsEditDialogOpen(false)}
+            onSuccess={handleProfileUpdate}
+          />
         </div>
       </CardContent>
     </Card>

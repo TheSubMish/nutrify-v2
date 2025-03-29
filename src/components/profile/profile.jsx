@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import ProfileHeader from "./profile-header"
 import HealthMetrics from "./health-metrics"
 import DietaryPreferences from "./dietary-preferences"
@@ -11,16 +10,21 @@ import AccountSettings from "./account-settings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Button from "@/components/ui/button"
 import { Save, RefreshCw } from "lucide-react"
+import { useAppStore } from "@/store"
+import { formatDate } from "@/utils/formatDate"
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal")
 
+  const { user } = useAppStore()
+  // const [isLoading, setIsLoading] = useState(false)
   // Sample user data - would come from API in real implementation
   const userData = {
-    name: "Subodh Mishra",
-    email: "ceo@submish.com",
-    joinDate: "January 15, 2025",
-    avatar: "/placeholder.svg?height=100&width=100",
+    id: user?.id || "",
+    name: user?.name || "Full Name",
+    email: user?.email || "youremail@mail.com",
+    joinDate:  user?.created_at ? formatDate(user.created_at) : formatDate(),
+    avatar: user?.avatar,
     metrics: {
       age: 32,
       height: 175, // cm
