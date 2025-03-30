@@ -17,11 +17,11 @@ export default function AccountSettings({ user }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fullName" className="font-bold">Full Name</Label>
-              <Input id="fullName" defaultValue={user.name} />
+              <Input id="fullName" defaultValue={user.name} disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email" className="font-bold">Email Address</Label>
-              <Input id="email" defaultValue={user.email} type="email" />
+              <Input id="email" defaultValue={user.email} type="email" disabled />
             </div>
           </div>
 

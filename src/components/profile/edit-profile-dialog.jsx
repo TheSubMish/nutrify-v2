@@ -16,10 +16,7 @@ export default function EditProfileDialog({ user, isOpen, onClose, onSuccess }) 
         email: user?.email || "",
         avatar: user?.avatar || "",
     })
-    const [isLoading, setIsLoading] = useState(false)
-
-    console.log(user);
-    
+    const [isLoading, setIsLoading] = useState(false)    
 
     const fileInputRef = useRef(null)
 
@@ -52,18 +49,22 @@ export default function EditProfileDialog({ user, isOpen, onClose, onSuccess }) 
             })
         
             const data = await response.json()
-            console.log(data.success)
+            console.log("success", data.success)
             if (data.success) {
                 toast.success("Your profile has been updated")
-                if (onSuccess) onSuccess(data.user)
+                console.log("data.user", data.profile);
+                
+                if (onSuccess) onSuccess(data.profile)
                 onClose()
             } else {
                 toast.error(data.message || "Failed to update profile")
             }
         } catch (error) {
-          toast.error("Something went wrong. Please try again.")
+            console.log("error", error);
+            
+            toast.error("Something went wrong. Please try again.")
         } finally {
-          setIsLoading(false)
+            setIsLoading(false)
         }
     }
 

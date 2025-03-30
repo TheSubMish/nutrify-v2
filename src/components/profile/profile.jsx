@@ -19,12 +19,12 @@ export default function Profile() {
   const { user } = useAppStore()
   // const [isLoading, setIsLoading] = useState(false)
   // Sample user data - would come from API in real implementation
-  const userData = {
+  const [userData, setUser] = useState( {
     id: user?.id || "",
     name: user?.name || "Full Name",
     email: user?.email || "youremail@mail.com",
-    joinDate:  user?.created_at ? formatDate(user.created_at) : formatDate(),
     avatar: user?.avatar,
+    joinDate:  user?.created_at ? formatDate(user.created_at) : formatDate(),
     metrics: {
       age: 32,
       height: 175, // cm
@@ -54,7 +54,7 @@ export default function Profile() {
       fatGoal: 65,
       activityLevel: "moderate",
     },
-  }
+  })
 
   const handleSaveChanges = () => {
     // Would handle saving changes to the backend
@@ -82,7 +82,7 @@ export default function Profile() {
           </div>
         </div>
 
-        <ProfileHeader user={userData} />
+        <ProfileHeader user={userData} setUser={setUser}/>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
           <TabsList className="grid grid-cols-4 mb-6 bg-gray-200">
@@ -103,10 +103,14 @@ export default function Profile() {
           <TabsContent value="goals" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FitnessGoals goals={userData.goals} />
-              <ProgressTracker
+              { userData?.metrics?.weightHistory && userData?.goals?.targetWeight ? (
+                <ProgressTracker
                 weightHistory={userData.metrics.weightHistory}
                 targetWeight={userData.goals.targetWeight}
               />
+              ) : 
+                <></>
+              }
             </div>
           </TabsContent>
 

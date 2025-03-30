@@ -4,13 +4,44 @@ import Button from "@/components/ui/button"
 import EditProfileDialog from "./edit-profile-dialog"
 import { useState } from "react"
 import { Edit } from "lucide-react"
+import { formatDate } from "@/utils/formatDate"
 
-export default function ProfileHeader({ user, onEditClick }) {
+export default function ProfileHeader({ user, setUser }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const handleProfileUpdate = (updatedUser) => {
-    setUser(updatedUser)
-  }
+    setUser((prevUser) => ({
+      id: updatedUser?.id || prevUser.id,
+      name: updatedUser?.full_name || prevUser.name,
+      email: updatedUser?.email || prevUser.email,
+      avatar: updatedUser?.avatar_url || prevUser.avatar,
+      joinDate: updatedUser?.created_at ? formatDate(updatedUser.created_at) : prevUser.joinDate,
+      metrics: {
+        age: updatedUser?.age ?? prevUser.metrics.age,
+        height: updatedUser?.height ?? prevUser.metrics.height,
+        weight: updatedUser?.weight ?? prevUser.metrics.weight,
+        bmi: updatedUser?.bmi ?? prevUser.metrics.bmi,
+        bodyFat: updatedUser?.body_fat ?? prevUser.metrics.bodyFat,
+        weightHistory: prevUser.metrics.weightHistory,
+      },
+      preferences: {
+        dietType: updatedUser?.diet_type || prevUser.preferences.dietType,
+        allergies: updatedUser?.allergies || prevUser.preferences.allergies,
+        restrictions: updatedUser?.dietary_restrictions || prevUser.preferences.restrictions,
+        dislikedFoods: prevUser.preferences.dislikedFoods,
+      },
+      goals: {
+        targetWeight: updatedUser?.target_weight ?? prevUser.goals.targetWeight,
+        weeklyLoss: updatedUser?.weekly_weight_loss ?? prevUser.goals.weeklyLoss,
+        calorieGoal: updatedUser?.calorie_goal ?? prevUser.goals.calorieGoal,
+        proteinGoal: updatedUser?.protein_goal ?? prevUser.goals.proteinGoal,
+        carbsGoal: prevUser.goals.carbsGoal,
+        fatGoal: prevUser.goals.fatGoal,
+        activityLevel: updatedUser?.activity_level || prevUser.goals.activityLevel,
+      },
+    }));
+  };
+  
 
   return (
     <Card>
