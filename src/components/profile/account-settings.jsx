@@ -1,11 +1,16 @@
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Input from "@/components/ui/input"
 import Label from "@/components/ui/Label"
 import Button from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
+import { ChangePasswordModal } from "@/components/profile/change-password"
 
 export default function AccountSettings({ user }) {
+
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -28,7 +33,11 @@ export default function AccountSettings({ user }) {
           <div className="space-y-2">
             {/* <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" value="••••••••" /> */}
-            <Button variant="secondary" className="h-auto p-0 text-sm font-extrabold">
+            <Button 
+              variant="secondary" 
+              className="h-auto p-0 text-sm font-extrabold"
+              onClick={() => setIsPasswordModalOpen(true)}
+            >
               Change password
             </Button>
           </div>
@@ -140,6 +149,10 @@ export default function AccountSettings({ user }) {
           </div>
         </CardContent>
       </Card>
+      <ChangePasswordModal 
+        isOpen={isPasswordModalOpen} 
+        onClose={() => setIsPasswordModalOpen(false)} 
+      />
     </div>
   )
 }
