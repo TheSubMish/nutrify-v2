@@ -3,15 +3,17 @@ import { parse } from 'cookie';
 
 export async function POST(request) {
     try {
+        // Get and validate session
         const cookies = parse(request.headers.get('cookie') || '');
-        const sessionCookie = JSON.parse(cookies['sb-tsttcdnsxisaewbtricp-auth-token']);
+        const sessionCookie = JSON.parse(cookies['sb-tsttcdnsxisaewbtricp-auth-token'] || '{}');
         
-        if (!sessionCookie) {
+        if (!sessionCookie?.[0]) {
             return Response.json({
                 success: false,
                 message: "Session cookie is missing"
             }, { status: 401 });
         }
+
         const { data: session, error: sessionError } = await supabase.auth.setSession({
             access_token: sessionCookie[0],
             refresh_token: sessionCookie[1]
@@ -61,80 +63,102 @@ export async function POST(request) {
             imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${fileName}`;
         }
 
-        // Prepare update payload for auth user
-        const updatePayload = {
-            email: email || undefined,  // Only update if provided
+        // Prepare update payloads for both auth and profiles table
+        const authUpdatePayload = {
+            email: email || undefined,
             user_metadata: {
-                full_name: name || undefined,  // Only update if provided
-                avatar_url: imageUrl || undefined  // Only update if uploaded
+                full_name: name || undefined,
+                avatar_url: imageUrl || undefined
             }
         };
 
-        // Remove undefined properties (Supabase doesn't allow undefined fields)
-        Object.keys(updatePayload).forEach(key => updatePayload[key] === undefined && delete updatePayload[key]);
+        const profilesUpdatePayload = {
+            ...(name && { full_name: name }),
+            ...(email && { email }),
+            ...(imageUrl && { avatar_url: imageUrl })
+        };
+
+        // Remove undefined properties
+        Object.keys(authUpdatePayload).forEach(key => 
+            authUpdatePayload[key] === undefined && delete authUpdatePayload[key]
+        );
         
-        if (updatePayload.user_metadata) {
-            Object.keys(updatePayload.user_metadata).forEach(key => 
-                updatePayload.user_metadata[key] === undefined && delete updatePayload.user_metadata[key]
+        if (authUpdatePayload.user_metadata) {
+            Object.keys(authUpdatePayload.user_metadata).forEach(key => 
+                authUpdatePayload.user_metadata[key] === undefined && delete authUpdatePayload.user_metadata[key]
             );
             
-            // Remove user_metadata if empty
-            if (Object.keys(updatePayload.user_metadata).length === 0) {
-                delete updatePayload.user_metadata;
+            if (Object.keys(authUpdatePayload.user_metadata).length === 0) {
+                delete authUpdatePayload.user_metadata;
             }
         }
 
-        if (Object.keys(updatePayload).length === 0) {
+        if (Object.keys(authUpdatePayload).length === 0 && Object.keys(profilesUpdatePayload).length === 0) {
             return Response.json({
                 success: false,
                 message: "No valid fields to update"
             }, { status: 400 });
         }
 
-        // Update user in authentication
-        const { data: updatedUser, error: updateError } = await supabase.auth.updateUser(updatePayload);
+        // Perform both operations in parallel if needed
+        const promises = [];
+        let authPromise, profilePromise;
 
-        if (updateError) throw updateError;
+        if (Object.keys(authUpdatePayload).length > 0) {
+            authPromise = supabase.auth.updateUser(authUpdatePayload);
+            promises.push(authPromise);
+        }
 
-        // Prepare profiles table update payload
-        const profilesUpdatePayload = {};
-        
-        if (name) profilesUpdatePayload.full_name = name;
-        if (email) profilesUpdatePayload.email = email;
-        if (imageUrl) profilesUpdatePayload.avatar_url = imageUrl;
-        
-        let updatedProfile = null;
-        
-        // Only update profiles table if we have fields to update
         if (Object.keys(profilesUpdatePayload).length > 0) {
-            // Update profiles table
-            const { data: profileData, error: profileUpdateError } = await supabase
+            profilePromise = supabase
                 .from('profiles')
                 .update(profilesUpdatePayload)
                 .eq('id', userId)
                 .select();
-
-            if (profileUpdateError) {
-                console.error("Profile table update error:", profileUpdateError);
-                return Response.json({
-                    success: true,
-                    imageUrl,
-                    user: updatedUser,
-                    warning: "Auth user updated but profile table update failed",
-                    profileError: profileUpdateError.message
-                }, { status: 200 });
-            }
-            
-            updatedProfile = profileData?.[0] || null;
+            promises.push(profilePromise);
         } else {
-            // If no profile updates needed, fetch the current profile
-            const { data: profileData } = await supabase
+            // Only select profile if we're not updating it
+            profilePromise = supabase
                 .from('profiles')
                 .select()
                 .eq('id', userId)
                 .single();
-                
-            updatedProfile = profileData;
+            promises.push(profilePromise);
+        }
+
+        // Wait for all operations to complete
+        const results = await Promise.all(promises);
+        
+        // Process results
+        const authResult = authPromise ? results[promises.indexOf(authPromise)] : null;
+        const profileResult = profilePromise ? results[promises.indexOf(profilePromise)] : null;
+
+        const authError = authResult?.error;
+        const profileError = profileResult?.error;
+        
+        if (authError && profileError) {
+            throw new Error(`Auth error: ${authError.message}, Profile error: ${profileError.message}`);
+        }
+        
+        const updatedUser = authResult?.data;
+        const updatedProfile = profileResult?.data?.[0] || profileResult?.data;
+
+        if (authError) {
+            return Response.json({
+                success: false,
+                message: `Auth update failed: ${authError.message}`,
+                profile: updatedProfile
+            }, { status: 500 });
+        }
+        
+        if (profileError) {
+            return Response.json({
+                success: true,
+                imageUrl,
+                user: updatedUser,
+                warning: "Auth user updated but profile table update failed",
+                profileError: profileError.message
+            }, { status: 200 });
         }
 
         return Response.json({

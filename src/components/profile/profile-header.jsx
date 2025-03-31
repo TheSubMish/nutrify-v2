@@ -5,9 +5,11 @@ import EditProfileDialog from "./edit-profile-dialog"
 import { useState } from "react"
 import { Edit } from "lucide-react"
 import { formatDate } from "@/utils/formatDate"
+import { useAppStore } from "@/store"
 
 export default function ProfileHeader({ user, setUser }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const { user: storeUser, setUser: setStoreUser } = useAppStore();
 
   const handleProfileUpdate = (updatedUser) => {
     setUser((prevUser) => ({
@@ -40,6 +42,14 @@ export default function ProfileHeader({ user, setUser }) {
         activityLevel: updatedUser?.activity_level || prevUser.goals.activityLevel,
       },
     }));
+
+    setStoreUser({
+      id: updatedUser?.id || storeUser?.id,
+      name: updatedUser?.full_name || storeUser?.name,
+      email: updatedUser?.email || storeUser?.email,
+      avatar: updatedUser?.avatar_url || storeUser?.avatar,
+      joinDate: storeUser?.joinDate,
+    });
   };
   
 
