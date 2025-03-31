@@ -1,3 +1,5 @@
+"use client"
+
 import Button from "@/components/ui/button"
 import Input from "@/components/ui/input"
 import BMICalculator from "@/components/home/Bmi"
@@ -6,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 export default function LandingPage() {
+
   return (
     <>
       <Navbar />
@@ -24,8 +27,8 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="space-x-4">
-                <Button>Get Started</Button>
-                <Button variant="secondary">Learn More</Button>
+                <Button onClick={() => (window.location.href = "/dashboard")}>Get Started</Button>
+                <Button variant="secondary" onClick={() => (window.location.href = "/about")}>Learn More</Button>
               </div>
             </div>
           </div>
@@ -95,7 +98,7 @@ export default function LandingPage() {
                     placeholder="Enter your email"
                     type="email"
                   />
-                  <Button type="submit" variant="secondary">
+                  <Button type="submit" variant="secondary" onClick={() => (window.location.href = "/dashboard")}>
                     Get Started
                   </Button>
                 </form>

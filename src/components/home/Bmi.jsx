@@ -325,7 +325,7 @@ export default function BMICalculator() {
                     </div>
                   )}
                   <Button
-                    onClick={() => (window.location.href = "/products")}
+                    onClick={() => (window.location.href = "/dashboard")}
                     className="w-full mt-4 btn-primary hover:bg-primary/90"
                   >
                     Get Started
