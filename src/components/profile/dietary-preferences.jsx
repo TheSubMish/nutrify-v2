@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { X, Plus } from "lucide-react"
 import { useState } from "react"
 
-export default function DietaryPreferences({ preferences }) {
+export default function DietaryPreferences({ preferences, setActiveSave }) {
   const [allergies, setAllergies] = useState(preferences.allergies || [])
   const [newAllergy, setNewAllergy] = useState("")
 

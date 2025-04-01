@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts"
 
-export default function ProgressTracker({ weightHistory, targetWeight }) {
+export default function ProgressTracker({ weightHistory, targetWeight, setActiveSave }) {
   // Format data for the chart
   const chartData = weightHistory.map((entry) => ({
     date: new Date(entry.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),

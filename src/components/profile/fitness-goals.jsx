@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
 
-export default function FitnessGoals({ goals }) {
+export default function FitnessGoals({ goals, setActiveSave }) {
   return (
     <Card>
       <CardHeader>

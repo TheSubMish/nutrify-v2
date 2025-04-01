@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { ChangePasswordModal } from "@/components/profile/change-password"
 
-export default function AccountSettings({ user }) {
+export default function AccountSettings({ user, setActiveSave }) {
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
