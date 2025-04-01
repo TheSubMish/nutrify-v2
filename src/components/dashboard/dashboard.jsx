@@ -1,15 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { AppSidebar } from "./app-sidebar"
 import MealCard from "./meal-card"
 import NutritionChart from "./nutrition-chart"
-// import AIRecommendation from "./ai-recommendation"
 import CalorieTracker from "./calorie-tracker"
 import WaterIntake from "./water-intake"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import Button from "@/components/ui/button"
-import { PlusCircle, RefreshCw, Zap } from "lucide-react"
+import { PlusCircle, Zap } from "lucide-react"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -117,7 +115,7 @@ export default function Dashboard() {
                 dinner={520}
               />
               <NutritionChart protein={102} carbs={120} fat={55} proteinGoal={120} carbsGoal={150} fatGoal={65} />
-              <WaterIntake consumed={5} goal={8} />
+              <WaterIntake initialConsumed={5} goal={8} />
             </div>
 
             <div className="mt-8">

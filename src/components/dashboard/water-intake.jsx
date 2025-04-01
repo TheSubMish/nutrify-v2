@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Droplets, Plus, Minus } from "lucide-react"
 import Button from "@/components/ui/button"
+import { useState } from "react"
 
-export default function WaterIntake({ consumed, goal }) {
+export default function WaterIntake({ initialConsumed, goal }) {
+  const [consumed, setConsumed] = useState(initialConsumed)
   const percentage = (consumed / goal) * 100
 
   return (
@@ -35,12 +37,30 @@ export default function WaterIntake({ consumed, goal }) {
         </div>
 
         <div className="flex justify-center gap-4">
-          <Button variant="outline" size="icon" className="h-8 w-8 rounded-full">
-            <Minus className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8 rounded-full">
-            <Plus className="h-4 w-4" />
-          </Button>
+          {/* <Button 
+            variant="outline"
+            size="icon"
+            disabled={false}
+            className="h-8 w-8 rounded-full"
+            onClick={() => setConsumed((prev) => Math.min(prev - 1, goal))}
+          > */}
+            <Minus 
+              className="h-8 w-8 text-secondary stroke-[#4A90E2] cursor-pointer font-bold "
+              onClick={() => setConsumed((prev) => Math.min(prev - 1, goal))}
+            />
+          {/* </Button> */}
+          {/* <Button 
+            variant="outline"
+            size="icon"
+            disabled={false}
+            className="h-8 w-8 rounded-full"
+            onClick={() => setConsumed((prev) => Math.max(prev + 1, 0))}
+          > */}
+            <Plus 
+              className="h-8 w-8 text-secondary stroke-[#4A90E2] cursor-pointer font-bold " 
+              onClick={() => setConsumed((prev) => Math.max(prev + 1, 0))}
+            />
+          {/* </Button> */}
         </div>
       </CardContent>
     </Card>
