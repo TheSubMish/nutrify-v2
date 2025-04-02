@@ -11,6 +11,9 @@ export default function ProfileHeader({ user, setUser }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const { user: storeUser, setUser: setStoreUser } = useAppStore();
 
+  console.log(user);
+  
+
   const handleProfileUpdate = (updatedUser) => {
     setUser((prevUser) => ({
       id: updatedUser?.id || prevUser.id,

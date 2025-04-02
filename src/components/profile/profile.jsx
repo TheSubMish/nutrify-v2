@@ -19,56 +19,23 @@ import { saveHealthMetrics } from "@/utils/savehealthMetrics"
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal")
   const { user } = useAppStore()
-  const [userData, setUser] = useState({
-    id: user?.id || "",
-    name: user?.name || "Full Name",
-    email: user?.email || "youremail@mail.com",
-    avatar: user?.avatar,
-    joinDate: user?.created_at ? formatDate(user.created_at) : formatDate(),
-    metrics: {
-      age: 32,
-      height: 175,
-      weight: 78,
-      bmi: 25.5,
-      bodyFat: 18.2,
-      chest: undefined,
-      waist: undefined,
-      hips: undefined,
-      weightHistory: [
-        { date: "2025-01-01", value: 82 },
-        { date: "2025-01-15", value: 80 },
-        { date: "2025-02-01", value: 79 },
-        { date: "2025-02-15", value: 78 },
-        { date: "2025-03-01", value: 78 },
-      ],
-    },
-    preferences: {
-      dietType: "balanced",
-      allergies: ["peanuts", "shellfish"],
-      restrictions: ["low-sodium"],
-      dislikedFoods: ["mushrooms", "olives"],
-    },
-    goals: {
-      targetWeight: 72,
-      weeklyLoss: 0.5,
-      calorieGoal: 2000,
-      proteinGoal: 120,
-      carbsGoal: 150,
-      fatGoal: 65,
-      activityLevel: "moderate",
-    },
-  })
+  const [userData, setUser] = useState({})
+  const [userMetrics, setUserMetrics] = useState({})
 
   const [activeSave, setActiveSave] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false) // for save changes loading state
+  const [loading, setLoading] = useState(true) // for initial loading state
 
   useEffect(() => {
     if (!user) {
       toast.error("Please log in to access your profile.");
       return;
     }
-
+    console.log(user);
+    
     const fetchProfile = async () => {
+      setLoading(true);
+
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -76,50 +43,63 @@ export default function Profile() {
         .single();
 
       if (error) {
-        toast.error("Error fetching profile data.");
+        toast.error("Error fetching user data.");
       } else {
-        setUser((prev) => ({
-          ...prev,
-          ...data,
-          name: data.full_name || prev.name,
-          avatar: data.avatar_url || prev.avatar,
-          joinDate: data.created_at ? formatDate(data.created_at) : prev.joinDate,
-          metrics: {
-            ...prev.metrics,
-            age: data.age ?? prev.metrics.age,
-            height: data.height ?? prev.metrics.height,
-            weight: data.weight ?? prev.metrics.weight,
-            bmi: data.bmi ?? prev.metrics.bmi,
-            bodyFat: data.body_fat ?? prev.metrics.bodyFat,
-          },
+        setUser({
+          id: user?.id || null,
+          name: user?.name || "Full Name",
+          email: user?.email || "youremail@mail.com",
+          avatar: user?.avatar || null,
+          joinDate: user?.created_at ? formatDate(user.created_at) : formatDate(),
           preferences: {
-            ...prev.preferences,
-            dietType: data.diet_type || prev.preferences.dietType,
-            allergies: data.allergies || prev.preferences.allergies,
-            restrictions: data.dietary_restrictions || prev.preferences.restrictions,
+            dietType: "balanced",
+            allergies: ["peanuts", "shellfish"],
+            restrictions: ["low-sodium"],
+            dislikedFoods: ["mushrooms", "olives"],
           },
           goals: {
-            ...prev.goals,
-            targetWeight: data.target_weight ?? prev.goals.targetWeight,
-            weeklyLoss: data.weekly_weight_loss ?? prev.goals.weeklyLoss,
-            calorieGoal: data.calorie_goal ?? prev.goals.calorieGoal,
-            proteinGoal: data.protein_goal ?? prev.goals.proteinGoal,
-            activityLevel: data.activity_level || prev.goals.activityLevel,
+            targetWeight: 72,
+            weeklyLoss: 0.5,
+            calorieGoal: 2000,
+            proteinGoal: 120,
+            carbsGoal: 150,
+            fatGoal: 65,
+            activityLevel: "moderate",
           },
-        }));
+        });
+
+        setUserMetrics({
+          age: data?.age || undefined,
+          height: data?.height || undefined,
+          weight: data?.weight || undefined,
+          bmi: data?.bmi || undefined,
+          bodyFat: data?.body_fat || undefined,
+          chest: data?.chest || undefined,
+          waist: data?.waist || undefined,
+          hips: data?.hips || undefined,
+          weightHistory: [
+            { date: "2025-01-01", value: 82 },
+            { date: "2025-01-15", value: 80 },
+            { date: "2025-02-01", value: 79 },
+            { date: "2025-02-15", value: 78 },
+            { date: "2025-03-01", value: 78 },
+          ],
+        });
       }
+
+      setLoading(false);
+    
     };
-    console.log(userData);
 
     fetchProfile();
-    console.log("user profile fetched");
+    console.log("User profile fetched");
 
-  }, []);
+  }, [user]);
 
   const handleSaveChanges = async () => {
     setIsLoading(true)
 
-    const { id, ...metrics } = userData.metrics
+    const { id, ...metrics } = userMetrics;
 
     switch (activeTab) {
 
@@ -140,6 +120,14 @@ export default function Profile() {
     console.log("Saving profile changes...")
   }
 
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-xl font-medium">Loading Profile...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-background overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
       {/* <AppSidebar /> */}
@@ -156,7 +144,7 @@ export default function Profile() {
             </Button>
             <Button size="sm" onClick={handleSaveChanges} disabled={!activeSave} >
               <Save className="mr-2 h-4 w-4" />
-              Save Changes
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
@@ -173,10 +161,7 @@ export default function Profile() {
 
           <TabsContent value="personal" className="space-y-6">
             <HealthMetrics
-              initialMetrics={userData.metrics} setActiveSave={setActiveSave} setMetrics={(newMetrics) => setUser(prev => ({
-                ...prev,
-                metrics: newMetrics
-              }))} 
+              initialMetrics={userMetrics} setActiveSave={setActiveSave} setMetricsInProfile={setUserMetrics}
             />
           </TabsContent>
 
@@ -187,9 +172,9 @@ export default function Profile() {
           <TabsContent value="goals" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FitnessGoals goals={userData.goals} setActiveSave={setActiveSave} />
-              {userData?.metrics?.weightHistory && userData?.goals?.targetWeight ? (
+              {userMetrics?.weightHistory && userData?.goals?.targetWeight ? (
                 <ProgressTracker
-                  weightHistory={userData.metrics.weightHistory}
+                  weightHistory={userMetrics.weightHistory}
                   targetWeight={userData.goals.targetWeight}
                   setActiveSave={setActiveSave}
                 />
