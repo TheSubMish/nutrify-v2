@@ -172,7 +172,7 @@ export default function Profile() {
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>
-            <Button size="sm" onClick={handleSaveChanges} disabled={!activeSave} >
+            <Button size="sm" onClick={handleSaveChanges} disabled={!activeSave || isLoading} >
               <Save className="mr-2 h-4 w-4" />
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>

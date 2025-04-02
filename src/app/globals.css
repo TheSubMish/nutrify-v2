@@ -29,7 +29,7 @@
   --accent: #FF4081;
   --accent-warm: #FFD700;
   --cta: #8A2BE2;
-  --muted: #F5F5F5;
+  --muted: #ff0000;
   --muted-foreground: #A9A9A9;
 
   /* Background & Foreground */
@@ -83,6 +83,7 @@ body {
 
 .bg-muted {
   background-color: var(--muted);
+  color: white;
 }
 
 /* Utility Classes */

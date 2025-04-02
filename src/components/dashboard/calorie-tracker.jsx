@@ -27,7 +27,7 @@ export default function CalorieTracker({ consumed, goal, remaining, breakfast, l
           </div>
         </div>
 
-        <div className="w-full bg-muted rounded-full h-3 mb-4">
+        <div className="w-full rounded-full h-3 mb-4">
           <Progress value={percentage} className="h-2 bg-[#ffe2ec]" indicatorClassName="bg-[#FF4081]" />
           {/* <div className="bg-orange-500 h-3 rounded-full" style={{ width: `${percentage}%` }}></div> */}
         </div>

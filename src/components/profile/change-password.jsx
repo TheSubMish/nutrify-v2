@@ -57,8 +57,7 @@ export function ChangePasswordModal({ isOpen, onClose }) {
             <Label htmlFor="currentPassword" className="font-bold">Current Password</Label>
             <Input 
               id="currentPassword" 
-              type="password" 
-              className="border-gray-500"
+              type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
@@ -69,8 +68,7 @@ export function ChangePasswordModal({ isOpen, onClose }) {
             <Label htmlFor="newPassword" className="font-bold">New Password</Label>
             <Input 
               id="newPassword" 
-              type="password" 
-              className="border-gray-500"
+              type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
