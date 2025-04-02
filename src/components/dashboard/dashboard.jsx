@@ -8,11 +8,12 @@ import WaterIntake from "./water-intake"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import Button from "@/components/ui/button"
 import { PlusCircle, Zap } from "lucide-react"
+import GeneratePlanModal from "./generate-plan-modal"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Sample data - would come from API in real implementation
   const meals = [
     {
       id: 1,
@@ -91,11 +92,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground">Monday, March 1, 2025</p>
           </div>
           <div className="flex gap-3">
-            {/* <Button variant="outline" size="sm">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh Plan
-            </Button> */}
-            <Button size="sm">
+            <Button size="sm" onClick={() => setIsModalOpen(true)}>
               <Zap className="mr-2 h-4 w-4" />
               Generate New Plan
             </Button>
@@ -132,18 +129,12 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
-
-            {/* <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-4">AI Recommendations</h2>
-              <div className="space-y-4">
-                {recommendations.map((rec) => (
-                  <AIRecommendation key={rec.id} recommendation={rec} />
-                ))}
-              </div>
-            </div> */}
           </TabsContent>
         </Tabs>
       </main>
+      
+      <GeneratePlanModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
     </div>
   )
 }
