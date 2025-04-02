@@ -20,15 +20,7 @@ export default function ProfileHeader({ user, setUser }) {
       name: updatedUser?.full_name || prevUser.name,
       email: updatedUser?.email || prevUser.email,
       avatar: updatedUser?.avatar_url || prevUser.avatar,
-      joinDate: updatedUser?.created_at ? formatDate(updatedUser.created_at) : prevUser.joinDate,
-      metrics: {
-        age: updatedUser?.age ?? prevUser.metrics.age,
-        height: updatedUser?.height ?? prevUser.metrics.height,
-        weight: updatedUser?.weight ?? prevUser.metrics.weight,
-        bmi: updatedUser?.bmi ?? prevUser.metrics.bmi,
-        bodyFat: updatedUser?.body_fat ?? prevUser.metrics.bodyFat,
-        weightHistory: prevUser.metrics.weightHistory,
-      },
+      created_at: updatedUser?.created_at ? formatDate(updatedUser.created_at) : prevUser.created_at,
       preferences: {
         dietType: updatedUser?.diet_type || prevUser.preferences.dietType,
         allergies: updatedUser?.allergies || prevUser.preferences.allergies,
@@ -51,7 +43,7 @@ export default function ProfileHeader({ user, setUser }) {
       name: updatedUser?.full_name || storeUser?.name,
       email: updatedUser?.email || storeUser?.email,
       avatar: updatedUser?.avatar_url || storeUser?.avatar,
-      joinDate: storeUser?.joinDate,
+      created_at: storeUser?.created_at,
     });
   };
   
@@ -87,7 +79,7 @@ export default function ProfileHeader({ user, setUser }) {
               </Button>
             </div>
             <p className="text-muted-foreground">{user.email}</p>
-            <p className="text-sm text-muted-foreground mt-1">Member since {user.joinDate}</p>
+            <p className="text-sm text-muted-foreground mt-1">Member since {user.created_at}</p>
           </div>
 
           {/* <div className="flex flex-col items-center gap-2 bg-muted p-4 rounded-lg">

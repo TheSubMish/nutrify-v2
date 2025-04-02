@@ -29,9 +29,14 @@ export default function HealthMetrics({ initialMetrics, setActiveSave, setMetric
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    const updatedMetrics = { ...metrics, [id]: value };
+  
+    const numericFields = ["age", "height", "weight", "bmi", "bodyFat", "chest", "waist", "hips"];
+    const updatedValue = numericFields.includes(id) && value === "" ? null : value;
+  
+    const updatedMetrics = { ...metrics, [id]: updatedValue };
     setMetrics(updatedMetrics);
     setActiveSave(true);
+  
     if (typeof setMetricsInProfile === "function") {
       setMetricsInProfile(updatedMetrics);
     }

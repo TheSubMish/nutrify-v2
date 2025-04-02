@@ -50,7 +50,7 @@ export default function Profile() {
           name: user?.name || "Full Name",
           email: user?.email || "youremail@mail.com",
           avatar: user?.avatar || null,
-          joinDate: user?.created_at ? formatDate(user.created_at) : formatDate(),
+          created_at: user?.created_at ? formatDate(user.created_at) : formatDate(),
           preferences: {
             dietType: "balanced",
             allergies: ["peanuts", "shellfish"],
