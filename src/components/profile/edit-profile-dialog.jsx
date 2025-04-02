@@ -49,10 +49,8 @@ export default function EditProfileDialog({ user, isOpen, onClose, onSuccess }) 
             })
         
             const data = await response.json()
-            console.log("success", data.success)
             if (data.success) {
                 toast.success("Your profile has been updated")
-                console.log("data.user", data.profile);
                 
                 if (onSuccess) onSuccess(data.profile)
                 onClose()
@@ -60,8 +58,6 @@ export default function EditProfileDialog({ user, isOpen, onClose, onSuccess }) 
                 toast.error(data.message || "Failed to update profile")
             }
         } catch (error) {
-            console.log("error", error);
-            
             toast.error("Something went wrong. Please try again.")
         } finally {
             setIsLoading(false)

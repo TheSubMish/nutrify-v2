@@ -31,8 +31,7 @@ export default function Profile() {
       toast.error("Please log in to access your profile.");
       return;
     }
-    console.log(user);
-    
+
     const fetchProfile = async () => {
       setLoading(true);
 
@@ -88,11 +87,10 @@ export default function Profile() {
       }
 
       setLoading(false);
-    
+
     };
 
     fetchProfile();
-    console.log("User profile fetched");
 
   }, [user]);
 
@@ -112,12 +110,32 @@ export default function Profile() {
           toast.success("Health metrics updated successfully!");
         }
         break;
+      case "diet":
+        const dietResponse = await fetch('/api/dietary-preference', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userData.id,
+            preferences: userData.preferences.current
+          }),
+        });
+
+        const result = await dietResponse.json();
+
+        if (!result.success) {
+          toast.error(result.message);
+        } else {
+          setActiveSave(false)
+          toast.success("Dietary preferences updated successfully!");
+        }
+        break;
 
       default:
         break;
     }
     setIsLoading(false)
-    console.log("Saving profile changes...")
   }
 
   if (loading) {
@@ -126,6 +144,18 @@ export default function Profile() {
         <p className="text-xl font-medium">Loading Profile...</p>
       </div>
     );
+  }
+
+  const handleTabChange = (value) => {
+    if (activeSave) {
+      const confirmLeave = window.confirm("You have unsaved changes. Do you want to leave without saving?");
+      if (confirmLeave) {
+        setActiveTab(value);
+        setActiveSave(false);
+      }
+    } else {
+      setActiveTab(value);
+    }
   }
 
   return (
@@ -151,7 +181,7 @@ export default function Profile() {
 
         <ProfileHeader user={userData} setUser={setUser} />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
+        <Tabs value={activeTab} onValueChange={(activeTab)=>{handleTabChange(activeTab)}} className="mt-8">
           <TabsList className="grid grid-cols-4 mb-6 bg-gray-200">
             <TabsTrigger value="personal">Personal Info</TabsTrigger>
             <TabsTrigger value="diet">Diet Preferences</TabsTrigger>

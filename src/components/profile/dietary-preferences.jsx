@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Label from "@/components/ui/Label"
@@ -8,15 +9,83 @@ import { Badge } from "@/components/ui/badge"
 import Button from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { X, Plus } from "lucide-react"
-import { useState } from "react"
+import { toast } from "sonner"
+import { useAppStore } from "@/store"
 
-export default function DietaryPreferences({ preferences, setActiveSave }) {
+export default function DietaryPreferences({ preferences = {}, setActiveSave }) {
+  const [loading, setLoading] = useState(true)
+  const { user } = useAppStore()
+
+  useEffect(() => {
+    async function fetchPreferences() {
+      try {
+        const response = await fetch("/api/dietary-preference")
+        const result = await response.json()
+        console.log(result);
+        
+        if (result.data) {
+          preferences.current = {
+            dietType: result.data.diet_type || "balanced",
+            restrictions: result.data.restrictions || [],
+            allergies: result.data.allergies || [],
+            dislikedFoods: result.data.disliked_foods || [],
+            mealFrequency: result.data.meal_frequency || {
+              breakfast: true,
+              lunch: true,
+              dinner: true,
+              snacks: true,
+            },
+          }
+        }
+      } catch (error) {
+        toast.error("Failed to load your preferences")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPreferences()
+  }, [user])
+
   const [allergies, setAllergies] = useState(preferences.allergies || [])
   const [newAllergy, setNewAllergy] = useState("")
 
   const [dislikedFoods, setDislikedFoods] = useState(preferences.dislikedFoods || [])
   const [newDislikedFood, setNewDislikedFood] = useState("")
 
+  const [dietType, setDietType] = useState(preferences.dietType || "balanced")
+  const [restriction, setRestriction] = useState(
+    Array.isArray(preferences.restrictions)
+      ? preferences.restrictions[0] || ""
+      : preferences.restrictions || ""
+  )
+
+  const [mealFrequency, setMealFrequency] = useState(preferences.mealFrequency || {
+    breakfast: true,
+    lunch: true,
+    dinner: true,
+    snacks: true
+  })
+
+  useEffect(() => {
+    const updatedPreferences = {
+      dietType,
+      restrictions: restriction ? [restriction] : [],
+      allergies,
+      dislikedFoods,
+      mealFrequency
+    }
+
+    const hasChanged = JSON.stringify(updatedPreferences) !== JSON.stringify(preferences)
+
+    if (hasChanged) {
+      setActiveSave(true)
+    }
+
+    preferences.current = updatedPreferences
+  }, [dietType, restriction, allergies, dislikedFoods, mealFrequency, setActiveSave, preferences])
+
+  // Add and remove allergies
   const addAllergy = () => {
     if (newAllergy && !allergies.includes(newAllergy)) {
       setAllergies([...allergies, newAllergy])
@@ -28,6 +97,7 @@ export default function DietaryPreferences({ preferences, setActiveSave }) {
     setAllergies(allergies.filter((a) => a !== item))
   }
 
+  // Add and remove disliked foods
   const addDislikedFood = () => {
     if (newDislikedFood && !dislikedFoods.includes(newDislikedFood)) {
       setDislikedFoods([...dislikedFoods, newDislikedFood])
@@ -37,6 +107,22 @@ export default function DietaryPreferences({ preferences, setActiveSave }) {
 
   const removeDislikedFood = (item) => {
     setDislikedFoods(dislikedFoods.filter((f) => f !== item))
+  }
+
+  // Handle meal frequency changes
+  const toggleMealFrequency = (meal) => {
+    setMealFrequency({
+      ...mealFrequency,
+      [meal]: !mealFrequency[meal]
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-xl font-medium">Loading Preferences...</p>
+      </div>
+    );
   }
 
   return (
@@ -49,7 +135,7 @@ export default function DietaryPreferences({ preferences, setActiveSave }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="dietType" className="font-bold">Diet Type</Label>
-            <Select defaultValue={preferences.dietType}>
+            <Select value={dietType} onValueChange={setDietType}>
               <SelectTrigger id="dietType">
                 <SelectValue placeholder="Select diet type" />
               </SelectTrigger>
@@ -68,7 +154,7 @@ export default function DietaryPreferences({ preferences, setActiveSave }) {
 
           <div className="space-y-2">
             <Label htmlFor="restrictions" className="font-bold">Dietary Restrictions</Label>
-            <Select defaultValue={preferences.restrictions?.[0] || ""}>
+            <Select value={restriction} onValueChange={setRestriction}>
               <SelectTrigger id="restrictions">
                 <SelectValue placeholder="Select restrictions" />
               </SelectTrigger>
@@ -149,25 +235,49 @@ export default function DietaryPreferences({ preferences, setActiveSave }) {
           <Label className="font-bold">Meal Frequency</Label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="flex items-center space-x-2">
-              <input type="checkbox" id="breakfast" className="rounded border-gray-300" defaultChecked />
+              <input
+                type="checkbox"
+                id="breakfast"
+                className="rounded border-gray-300"
+                checked={mealFrequency.breakfast}
+                onChange={() => toggleMealFrequency('breakfast')}
+              />
               <Label htmlFor="breakfast" className="text-sm font-normal">
                 Breakfast
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <input type="checkbox" id="lunch" className="rounded border-gray-300" defaultChecked />
+              <input
+                type="checkbox"
+                id="lunch"
+                className="rounded border-gray-300"
+                checked={mealFrequency.lunch}
+                onChange={() => toggleMealFrequency('lunch')}
+              />
               <Label htmlFor="lunch" className="text-sm font-normal">
                 Lunch
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <input type="checkbox" id="dinner" className="rounded border-gray-300" defaultChecked />
+              <input
+                type="checkbox"
+                id="dinner"
+                className="rounded border-gray-300"
+                checked={mealFrequency.dinner}
+                onChange={() => toggleMealFrequency('dinner')}
+              />
               <Label htmlFor="dinner" className="text-sm font-normal">
                 Dinner
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <input type="checkbox" id="snacks" className="rounded border-gray-300" defaultChecked />
+              <input
+                type="checkbox"
+                id="snacks"
+                className="rounded border-gray-300"
+                checked={mealFrequency.snacks}
+                onChange={() => toggleMealFrequency('snacks')}
+              />
               <Label htmlFor="snacks" className="text-sm font-normal">
                 Snacks
               </Label>
