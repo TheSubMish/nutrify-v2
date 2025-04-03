@@ -12,19 +12,22 @@ import { X, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { useAppStore } from "@/store"
 
-export default function DietaryPreferences({ preferences = {}, setActiveSave }) {
+export default function DietaryPreferences({ setActiveSave }) {
   const [loading, setLoading] = useState(true)
-  const { user } = useAppStore()
+  const { user, userPreferences, setUserPreferences } = useAppStore()
+  const [initialLoad, setInitialLoad] = useState(true)
 
+  // Replace the entire useEffect for fetching preferences with this updated version
   useEffect(() => {
     async function fetchPreferences() {
       try {
         const response = await fetch("/api/dietary-preference")
         const result = await response.json()
-        console.log(result);
-        
+        console.log("API Response:", result)
+
         if (result.data) {
-          preferences.current = {
+          // Update the global state with API data
+          setUserPreferences({
             dietType: result.data.diet_type || "balanced",
             restrictions: result.data.restrictions || [],
             allergies: result.data.allergies || [],
@@ -35,86 +38,116 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
               dinner: true,
               snacks: true,
             },
-          }
+          })
+
+          // Also update local state directly to ensure it's set correctly
+          setAllergies(result.data.allergies || [])
+          setDislikedFoods(result.data.disliked_foods || [])
+          setDietType(result.data.diet_type || "balanced")
+          setRestriction(
+            Array.isArray(result.data.restrictions) && result.data.restrictions.length > 0
+              ? result.data.restrictions[0]
+              : "",
+          )
+          setMealFrequency(
+            result.data.meal_frequency || {
+              breakfast: true,
+              lunch: true,
+              dinner: true,
+              snacks: true,
+            },
+          )
         }
       } catch (error) {
+        console.error("Error fetching preferences:", error)
         toast.error("Failed to load your preferences")
       } finally {
         setLoading(false)
+        setInitialLoad(false)
       }
     }
 
     fetchPreferences()
-  }, [user])
+  }, [user, setUserPreferences])
 
-  const [allergies, setAllergies] = useState(preferences.allergies || [])
+  // Initialize local state from userPreferences
+  const [allergies, setAllergies] = useState([])
   const [newAllergy, setNewAllergy] = useState("")
-
-  const [dislikedFoods, setDislikedFoods] = useState(preferences.dislikedFoods || [])
+  const [dislikedFoods, setDislikedFoods] = useState([])
   const [newDislikedFood, setNewDislikedFood] = useState("")
-
-  const [dietType, setDietType] = useState(preferences.dietType || "balanced")
-  const [restriction, setRestriction] = useState(
-    Array.isArray(preferences.restrictions)
-      ? preferences.restrictions[0] || ""
-      : preferences.restrictions || ""
-  )
-
-  const [mealFrequency, setMealFrequency] = useState(preferences.mealFrequency || {
+  const [dietType, setDietType] = useState("balanced")
+  const [restriction, setRestriction] = useState("")
+  const [mealFrequency, setMealFrequency] = useState({
     breakfast: true,
     lunch: true,
     dinner: true,
-    snacks: true
+    snacks: true,
   })
 
-  useEffect(() => {
+  // Handle changes to preferences and update the save button state
+  const handlePreferenceChange = () => {
     const updatedPreferences = {
       dietType,
       restrictions: restriction ? [restriction] : [],
       allergies,
       dislikedFoods,
-      mealFrequency
+      mealFrequency,
     }
 
-    const hasChanged = JSON.stringify(updatedPreferences) !== JSON.stringify(preferences)
-
-    if (hasChanged) {
-      setActiveSave(true)
-    }
-
-    preferences.current = updatedPreferences
-  }, [dietType, restriction, allergies, dislikedFoods, mealFrequency, setActiveSave, preferences])
+    setUserPreferences(updatedPreferences)
+    setActiveSave(true)
+  }
 
   // Add and remove allergies
   const addAllergy = () => {
     if (newAllergy && !allergies.includes(newAllergy)) {
-      setAllergies([...allergies, newAllergy])
+      const newAllergies = [...allergies, newAllergy]
+      setAllergies(newAllergies)
       setNewAllergy("")
+      handlePreferenceChange()
     }
   }
 
   const removeAllergy = (item) => {
     setAllergies(allergies.filter((a) => a !== item))
+    handlePreferenceChange()
   }
 
   // Add and remove disliked foods
   const addDislikedFood = () => {
     if (newDislikedFood && !dislikedFoods.includes(newDislikedFood)) {
-      setDislikedFoods([...dislikedFoods, newDislikedFood])
+      const newDislikedFoodsList = [...dislikedFoods, newDislikedFood]
+      setDislikedFoods(newDislikedFoodsList)
       setNewDislikedFood("")
+      handlePreferenceChange()
     }
   }
 
   const removeDislikedFood = (item) => {
     setDislikedFoods(dislikedFoods.filter((f) => f !== item))
+    handlePreferenceChange()
   }
 
   // Handle meal frequency changes
   const toggleMealFrequency = (meal) => {
-    setMealFrequency({
+    const updatedMealFrequency = {
       ...mealFrequency,
-      [meal]: !mealFrequency[meal]
-    })
+      [meal]: !mealFrequency[meal],
+    }
+    setMealFrequency(updatedMealFrequency)
+    handlePreferenceChange()
+  }
+
+  // Handle diet type change
+  const handleDietTypeChange = (value) => {
+    setDietType(value)
+    handlePreferenceChange()
+  }
+
+  // Handle restriction change
+  const handleRestrictionChange = (value) => {
+    setRestriction(value)
+    handlePreferenceChange()
   }
 
   if (loading) {
@@ -122,7 +155,7 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
       <div className="flex h-screen items-center justify-center">
         <p className="text-xl font-medium">Loading Preferences...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -134,8 +167,10 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="dietType" className="font-bold">Diet Type</Label>
-            <Select value={dietType} onValueChange={setDietType}>
+            <Label htmlFor="dietType" className="font-bold">
+              Diet Type
+            </Label>
+            <Select value={dietType} onValueChange={handleDietTypeChange}>
               <SelectTrigger id="dietType">
                 <SelectValue placeholder="Select diet type" />
               </SelectTrigger>
@@ -153,8 +188,10 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="restrictions" className="font-bold">Dietary Restrictions</Label>
-            <Select value={restriction} onValueChange={setRestriction}>
+            <Label htmlFor="restrictions" className="font-bold">
+              Dietary Restrictions
+            </Label>
+            <Select value={restriction} onValueChange={handleRestrictionChange}>
               <SelectTrigger id="restrictions">
                 <SelectValue placeholder="Select restrictions" />
               </SelectTrigger>
@@ -240,7 +277,7 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
                 id="breakfast"
                 className="rounded border-gray-300"
                 checked={mealFrequency.breakfast}
-                onChange={() => toggleMealFrequency('breakfast')}
+                onChange={() => toggleMealFrequency("breakfast")}
               />
               <Label htmlFor="breakfast" className="text-sm font-normal">
                 Breakfast
@@ -252,7 +289,7 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
                 id="lunch"
                 className="rounded border-gray-300"
                 checked={mealFrequency.lunch}
-                onChange={() => toggleMealFrequency('lunch')}
+                onChange={() => toggleMealFrequency("lunch")}
               />
               <Label htmlFor="lunch" className="text-sm font-normal">
                 Lunch
@@ -264,7 +301,7 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
                 id="dinner"
                 className="rounded border-gray-300"
                 checked={mealFrequency.dinner}
-                onChange={() => toggleMealFrequency('dinner')}
+                onChange={() => toggleMealFrequency("dinner")}
               />
               <Label htmlFor="dinner" className="text-sm font-normal">
                 Dinner
@@ -276,7 +313,7 @@ export default function DietaryPreferences({ preferences = {}, setActiveSave }) 
                 id="snacks"
                 className="rounded border-gray-300"
                 checked={mealFrequency.snacks}
-                onChange={() => toggleMealFrequency('snacks')}
+                onChange={() => toggleMealFrequency("snacks")}
               />
               <Label htmlFor="snacks" className="text-sm font-normal">
                 Snacks

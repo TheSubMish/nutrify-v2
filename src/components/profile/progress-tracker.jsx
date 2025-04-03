@@ -53,19 +53,19 @@ export default function ProgressTracker({ weightHistory, targetWeight, setActive
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="bg-muted rounded-lg p-3 text-center">
+          <div className="border-2 border-gray-400 rounded-lg p-3 text-center">
             <div className="text-sm text-muted-foreground">Starting Weight</div>
             <div className="text-xl font-semibold">{weightHistory[0].value} kg</div>
           </div>
-          <div className="bg-muted rounded-lg p-3 text-center">
+          <div className="border-2 border-gray-400 rounded-lg p-3 text-center">
             <div className="text-sm text-muted-foreground">Current Weight</div>
             <div className="text-xl font-semibold">{weightHistory[weightHistory.length - 1].value} kg</div>
           </div>
-          <div className="bg-muted rounded-lg p-3 text-center">
+          <div className="border-2 border-gray-400 rounded-lg p-3 text-center">
             <div className="text-sm text-muted-foreground">Target Weight</div>
             <div className="text-xl font-semibold">{targetWeight} kg</div>
           </div>
-          <div className="bg-muted rounded-lg p-3 text-center">
+          <div className="border-2 border-gray-400 rounded-lg p-3 text-center">
             <div className="text-sm text-muted-foreground">Weight Lost</div>
             <div className="text-xl font-semibold">
               {(weightHistory[0].value - weightHistory[weightHistory.length - 1].value).toFixed(1)} kg

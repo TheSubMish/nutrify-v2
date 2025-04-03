@@ -21,16 +21,22 @@ export const useAppStore = create((set) => ({
         set({ user: null });
     },
 
-    // Other global states
-    // theme: getStoredState("theme", "light"),
-    // setTheme: (theme) => {
-    //     localStorage.setItem("theme", JSON.stringify(theme));
-    //     set({ theme });
-    // },
+    userMetrics: {},
+    setUserMetrics: (userMetrics) => {
+        set({ userMetrics: userMetrics });
+    },
 
-    // sidebarOpen: getStoredState("sidebarOpen", true),
-    // setSidebarOpen: (isOpen) => {
-    //     localStorage.setItem("sidebarOpen", JSON.stringify(isOpen));
-    //     set({ sidebarOpen: isOpen });
-    // },
+    // User preferences
+    userPreferences: {},
+    setUserPreferences: (userPreferences) => {
+        set({ userPreferences: userPreferences });
+    },
+
+    // User goals
+    userGoals: {},
+    setUserGoals: (userGoals) => {
+        set({ userGoals: userGoals });
+    },
+
+    
 }));

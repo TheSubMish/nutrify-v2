@@ -18,9 +18,8 @@ import { saveHealthMetrics } from "@/utils/savehealthMetrics"
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal")
-  const { user } = useAppStore()
+  const { user, userMetrics, setUserMetrics, userPreferences } = useAppStore()
   const [userData, setUser] = useState({})
-  const [userMetrics, setUserMetrics] = useState({})
 
   const [activeSave, setActiveSave] = useState(false)
   const [isLoading, setIsLoading] = useState(false) // for save changes loading state
@@ -50,12 +49,6 @@ export default function Profile() {
           email: user?.email || "youremail@mail.com",
           avatar: user?.avatar || null,
           created_at: user?.created_at ? formatDate(user.created_at) : formatDate(),
-          preferences: {
-            dietType: "balanced",
-            allergies: ["peanuts", "shellfish"],
-            restrictions: ["low-sodium"],
-            dislikedFoods: ["mushrooms", "olives"],
-          },
           goals: {
             targetWeight: 72,
             weeklyLoss: 0.5,
@@ -118,7 +111,7 @@ export default function Profile() {
           },
           body: JSON.stringify({
             userId: userData.id,
-            preferences: userData.preferences.current
+            preferences: userPreferences
           }),
         });
 
@@ -181,7 +174,7 @@ export default function Profile() {
 
         <ProfileHeader user={userData} setUser={setUser} />
 
-        <Tabs value={activeTab} onValueChange={(activeTab)=>{handleTabChange(activeTab)}} className="mt-8">
+        <Tabs value={activeTab} onValueChange={(activeTab) => { handleTabChange(activeTab) }} className="mt-8">
           <TabsList className="grid grid-cols-4 mb-6 bg-gray-200">
             <TabsTrigger value="personal">Personal Info</TabsTrigger>
             <TabsTrigger value="diet">Diet Preferences</TabsTrigger>
@@ -196,7 +189,7 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="diet" className="space-y-6">
-            <DietaryPreferences preferences={userData.preferences} setActiveSave={setActiveSave} />
+            <DietaryPreferences setActiveSave={setActiveSave} />
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-6">

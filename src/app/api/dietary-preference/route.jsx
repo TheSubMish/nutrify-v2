@@ -1,9 +1,29 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { supabase } from '@/supabase.config.mjs';
+import { NextResponse } from 'next/server';
+import { parse } from 'cookie';
 
 export async function GET(request) {
-    const supabase = await createRouteHandlerClient({ cookies })
+    const cookies = parse(request.headers.get('cookie') || '');
+    const sessionCookie = JSON.parse(cookies['sb-tsttcdnsxisaewbtricp-auth-token'] || '{}');
+
+    if (!sessionCookie?.[0]) {
+        return Response.json({
+            success: false,
+            message: "Session cookie is missing"
+        }, { status: 401 });
+    }
+
+    const { data: session, error: sessionError } = await supabase.auth.setSession({
+        access_token: sessionCookie[0],
+        refresh_token: sessionCookie[1]
+    });
+
+    if (sessionError || !session) {
+        return Response.json({
+            success: false,
+            message: "Session is missing or expired"
+        }, { status: 401 });
+    }
 
     // Get the current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -27,9 +47,31 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-    const supabase = await createRouteHandlerClient({ cookies })
 
     try {
+
+        const cookies = parse(request.headers.get('cookie') || '');
+        const sessionCookie = JSON.parse(cookies['sb-tsttcdnsxisaewbtricp-auth-token'] || '{}');
+
+        if (!sessionCookie?.[0]) {
+            return Response.json({
+                success: false,
+                message: "Session cookie is missing"
+            }, { status: 401 });
+        }
+
+        const { data: session, error: sessionError } = await supabase.auth.setSession({
+            access_token: sessionCookie[0],
+            refresh_token: sessionCookie[1]
+        });
+
+        if (sessionError || !session) {
+            return Response.json({
+                success: false,
+                message: "Session is missing or expired"
+            }, { status: 401 });
+        }
+
         const { userId, preferences } = await request.json()
 
         if (!userId) {
