@@ -20,6 +20,15 @@ export default function DietaryPreferences({ setActiveSave }) {
   // Replace the entire useEffect for fetching preferences with this updated version
   useEffect(() => {
     async function fetchPreferences() {
+      console.log(userPreferences);
+      
+      if (userPreferences && Object.keys(userPreferences).length > 0){
+        // If userPreferences is already set, skip the API call
+        setLoading(false)
+        setInitialLoad(false)
+        return
+      }
+
       try {
         const response = await fetch("/api/dietary-preference")
         const result = await response.json()
