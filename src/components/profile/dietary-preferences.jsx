@@ -20,8 +20,7 @@ export default function DietaryPreferences({ setActiveSave }) {
   // Replace the entire useEffect for fetching preferences with this updated version
   useEffect(() => {
     async function fetchPreferences() {
-      console.log(userPreferences);
-      
+
       if (userPreferences && Object.keys(userPreferences).length > 0){
         // If userPreferences is already set, skip the API call
         setLoading(false)
@@ -32,7 +31,6 @@ export default function DietaryPreferences({ setActiveSave }) {
       try {
         const response = await fetch("/api/dietary-preference")
         const result = await response.json()
-        console.log("API Response:", result)
 
         if (result.data) {
           // Update the global state with API data
@@ -68,7 +66,6 @@ export default function DietaryPreferences({ setActiveSave }) {
           )
         }
       } catch (error) {
-        console.error("Error fetching preferences:", error)
         toast.error("Failed to load your preferences")
       } finally {
         setLoading(false)
@@ -77,7 +74,7 @@ export default function DietaryPreferences({ setActiveSave }) {
     }
 
     fetchPreferences()
-  }, [user, setUserPreferences])
+  }, [])
 
   // Initialize local state from userPreferences
   const [allergies, setAllergies] = useState([])

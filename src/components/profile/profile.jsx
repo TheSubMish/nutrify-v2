@@ -15,10 +15,11 @@ import { formatDate } from "@/utils/formatDate"
 import { supabase } from "@/supabase.config.mjs"
 import { toast } from "sonner"
 import { saveHealthMetrics } from "@/utils/savehealthMetrics"
+import { se } from "date-fns/locale"
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal")
-  const { user, userMetrics, setUserMetrics, userPreferences } = useAppStore()
+  const { user, userMetrics, setUserMetrics, userPreferences, userGoals } = useAppStore()
   const [userData, setUser] = useState({})
 
   const [activeSave, setActiveSave] = useState(false)
@@ -92,6 +93,7 @@ export default function Profile() {
 
     const { id, ...metrics } = userMetrics;
 
+    let result;
     switch (activeTab) {
 
       case "personal":
@@ -115,7 +117,7 @@ export default function Profile() {
           }),
         });
 
-        const result = await dietResponse.json();
+        result = await dietResponse.json();
 
         if (!result.success) {
           toast.error(result.message);
@@ -124,6 +126,29 @@ export default function Profile() {
           toast.success("Dietary preferences updated successfully!");
         }
         break;
+
+        case "goals":
+          
+          const fitnessGoalsResponse = await fetch('/api/fitness-goals', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: userData.id,
+              fitness_goals: userGoals
+            }),
+          });
+  
+          result = await fitnessGoalsResponse.json();
+  
+          if (!result.success) {
+            toast.error(result.message);
+          } else {
+            setActiveSave(false)
+            toast.success("Dietary preferences updated successfully!");
+          }
+          break;
 
       default:
         break;
@@ -142,9 +167,14 @@ export default function Profile() {
   const handleTabChange = (value) => {
     if (activeSave) {
       const confirmLeave = window.confirm("You have unsaved changes. Do you want to leave without saving?");
+      
       if (confirmLeave) {
         setActiveTab(value);
         setActiveSave(false);
+      } else {
+        setActiveTab(activeTab);
+        setActiveSave(true);
+        toast.error("Please save your changes before switching tabs.");
       }
     } else {
       setActiveTab(value);
@@ -194,7 +224,7 @@ export default function Profile() {
 
           <TabsContent value="goals" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FitnessGoals goals={userData.goals} setActiveSave={setActiveSave} />
+              <FitnessGoals setActiveSave={setActiveSave} />
               {userMetrics?.weightHistory && userData?.goals?.targetWeight ? (
                 <ProgressTracker
                   weightHistory={userMetrics.weightHistory}
