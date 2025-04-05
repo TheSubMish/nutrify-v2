@@ -83,18 +83,18 @@ export default function FitnessGoals({ setActiveSave }) {
 
   const handleSliderChange = (value) => {
     const weeklyLoss = value[0] / 10
-    setUserGoals((prev) => ({
-      ...prev,
-      weeklyLoss: weeklyLoss,
-    }))
+    const currentGoals = userGoals;
+    const updatedGoals = { ...currentGoals, weeklyLoss: weeklyLoss };
+    setUserGoals(updatedGoals);
     setActiveSave(true)
+    console.log(userGoals);
+    
   }
 
   const handleSelectChange = (value) => {
-    setUserGoals((prev) => ({
-      ...prev,
-      activityLevel: value,
-    }))
+    const currentGoals = userGoals;
+    const updatedGoals = { ...currentGoals, activityLevel: value };
+    setUserGoals(updatedGoals);
     setActiveSave(true)
   }
 
@@ -123,7 +123,7 @@ export default function FitnessGoals({ setActiveSave }) {
             <Label htmlFor="weeklyLoss" className="font-bold">Weekly Weight Change (kg)</Label>
             <span className="text-sm text-muted-foreground">{userGoals.weeklyLoss} kg/week</span>
           </div>
-          <Slider id="weeklyLoss" value={[userGoals.weeklyLoss * 10]} max={10} step={1} className="py-4" onChange={handleSliderChange} />
+          <Slider id="weeklyLoss" value={[userGoals.weeklyLoss * 10]} max={10} step={1} className="py-4" onValueChange={handleSliderChange} />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>-1.0 kg</span>
             <span>-0.5 kg</span>

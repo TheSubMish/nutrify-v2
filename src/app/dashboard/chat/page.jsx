@@ -290,7 +290,7 @@ function ChatMessage({ message, isLastMessage }) {
     <div className={`flex mb-4 ${isBot ? "" : "justify-end"}`}>
       <div className={`flex max-w-[80%] ${isBot ? "items-start" : "items-end flex-row-reverse"}`}>
         <div
-          className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${isBot ? "bg-muted" : "bg-primary text-primary-foreground"}`}
+          className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${isBot ? "bg-primary text-primary-foreground" : "bg-primary text-primary-foreground"}`}
         >
           {isBot ? (
             <Bot className="h-6 w-6 primary" />
@@ -299,7 +299,7 @@ function ChatMessage({ message, isLastMessage }) {
           )}
         </div>
 
-        <div className={`mx-2 px-4 py-2 rounded-lg ${isBot ? "bg-muted" : "bg-primary text-primary-foreground"}`}>
+        <div className={`mx-2 px-4 py-2 rounded-lg ${isBot ? "bg-primary text-primary-foreground" : "bg-primary text-primary-foreground"}`}>
           <div className="text-sm whitespace-pre-wrap">
             {isTyping ? (
               <TypingAnimation text={responseText} />
