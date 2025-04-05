@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Input from "@/components/ui/input"
 import Label from "@/components/ui/Label"
@@ -13,6 +15,9 @@ export default function FitnessGoals({ setActiveSave }) {
   const { userGoals, setUserGoals, user } = useAppStore()
 
   useEffect(() => {
+
+    console.log(userGoals);
+    
     if (!user) {
       toast.error("Please log in to view your fitness goals.")
       setLoading(true)
@@ -25,76 +30,83 @@ export default function FitnessGoals({ setActiveSave }) {
     }
 
     const fetchUserGoals = async () => {
+      try {
+        const response = await fetch(`/api/fitness-goals`)
 
-      const response = await fetch(`/api/fitness-goals`)
+        if (response.ok) {
+          const data = await response.json()
 
-      if (response.ok) {
+          const defaultGoals = {
+            targetWeight: 0,
+            weeklyLoss: 0.5,
+            calorieGoal: 0,
+            proteinGoal: 0,
+            carbsGoal: 0,
+            fatGoal: 0,
+            fiberGoal: 0,
+            sugarGoal: 0,
+            activityLevel: "moderate",
+          }
 
-        const data = await response.json()
+          console.log(data.data);
+          
 
-        const defaultGoals = {
-          targetWeight: 0,
-          weeklyLoss: 0.5,
-          calorieGoal: 0,
-          proteinGoal: 0,
-          carbsGoal: 0,
-          fatGoal: 0,
-          fiberGoal: 0,
-          sugarGoal: 0,
-          activityLevel: "moderate"
-        };
+          if (data.data) {
+            const goalsData = data.data.fitnessGoals
 
-        if (data.data) {
-          const goalsData = data.data;
+            console.log(goalsData);
+            
 
-          setUserGoals({
-            targetWeight: goalsData.target_weight ?? defaultGoals.targetWeight,
-            weeklyLoss: goalsData.weekly_loss ?? defaultGoals.weeklyLoss,
-            calorieGoal: goalsData.calorie_goal ?? defaultGoals.calorieGoal,
-            proteinGoal: goalsData.protein_goal ?? defaultGoals.proteinGoal,
-            carbsGoal: goalsData.carbs_goal ?? defaultGoals.carbsGoal,
-            fatGoal: goalsData.fat_goal ?? defaultGoals.fatGoal,
-            fiberGoal: goalsData.fiber_goal ?? defaultGoals.fiberGoal,
-            sugarGoal: goalsData.sugar_goal ?? defaultGoals.sugarGoal,
-            activityLevel: goalsData.activity_level ?? defaultGoals.activityLevel,
-          });
-
+            setUserGoals({
+              targetWeight: goalsData.target_weight ?? defaultGoals.targetWeight,
+              weeklyLoss: goalsData.weekly_loss ?? defaultGoals.weeklyLoss,
+              calorieGoal: goalsData.calorie_goal ?? defaultGoals.calorieGoal,
+              proteinGoal: goalsData.protein_goal ?? defaultGoals.proteinGoal,
+              carbsGoal: goalsData.carbs_goal ?? defaultGoals.carbsGoal,
+              fatGoal: goalsData.fat_goal ?? defaultGoals.fatGoal,
+              fiberGoal: goalsData.fiber_goal ?? defaultGoals.fiberGoal,
+              sugarGoal: goalsData.sugar_goal ?? defaultGoals.sugarGoal,
+              activityLevel: goalsData.activity_level ?? defaultGoals.activityLevel,
+            })
+          } else {
+            // If no data at all, use all defaults
+            setUserGoals(defaultGoals)
+          }
+          setLoading(false)
         } else {
-          // If no data at all, use all defaults
-          setUserGoals(defaultGoals);
+          setLoading(false)
+          toast.error("Failed to fetch fitness goals")
         }
+      } catch (error) {
+        console.error(error)
+        toast.error("An error occurred while fetching fitness goals")
         setLoading(false)
-
-      } else {
-        setLoading(false)
-        toast.error("Failed to fetch fitness goals")
       }
     }
+
     fetchUserGoals()
-  }, [])
+  }, [user, setUserGoals])
 
   const handleInputChange = (e) => {
     const { id, value } = e.target
-    const currentGoals = userGoals;
-    const updatedGoals = { ...currentGoals, [id]: value };
-    setUserGoals(updatedGoals);
+    const currentGoals = userGoals
+    const updatedGoals = { ...currentGoals, [id]: value }
+    setUserGoals(updatedGoals)
     setActiveSave(true)
   }
 
   const handleSliderChange = (value) => {
     const weeklyLoss = value[0] / 10
-    const currentGoals = userGoals;
-    const updatedGoals = { ...currentGoals, weeklyLoss: weeklyLoss };
-    setUserGoals(updatedGoals);
+    const currentGoals = userGoals
+    const updatedGoals = { ...currentGoals, weeklyLoss: weeklyLoss }
+    setUserGoals(updatedGoals)
     setActiveSave(true)
-    console.log(userGoals);
-    
   }
 
   const handleSelectChange = (value) => {
-    const currentGoals = userGoals;
-    const updatedGoals = { ...currentGoals, activityLevel: value };
-    setUserGoals(updatedGoals);
+    const currentGoals = userGoals
+    const updatedGoals = { ...currentGoals, activityLevel: value }
+    setUserGoals(updatedGoals)
     setActiveSave(true)
   }
 
@@ -114,16 +126,27 @@ export default function FitnessGoals({ setActiveSave }) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="targetWeight" className="font-bold">Target Weight (kg)</Label>
+          <Label htmlFor="targetWeight" className="font-bold">
+            Target Weight (kg)
+          </Label>
           <Input id="targetWeight" value={userGoals.targetWeight} type="number" onChange={handleInputChange} />
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="weeklyLoss" className="font-bold">Weekly Weight Change (kg)</Label>
+            <Label htmlFor="weeklyLoss" className="font-bold">
+              Weekly Weight Change (kg)
+            </Label>
             <span className="text-sm text-muted-foreground">{userGoals.weeklyLoss} kg/week</span>
           </div>
-          <Slider id="weeklyLoss" value={[userGoals.weeklyLoss * 10]} max={10} step={1} className="py-4" onValueChange={handleSliderChange} />
+          <Slider
+            id="weeklyLoss"
+            value={[userGoals.weeklyLoss * 10]}
+            max={10}
+            step={1}
+            className="py-4"
+            onValueChange={handleSliderChange}
+          />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>-1.0 kg</span>
             <span>-0.5 kg</span>
@@ -136,8 +159,10 @@ export default function FitnessGoals({ setActiveSave }) {
         <Separator />
 
         <div className="space-y-2">
-          <Label htmlFor="activityLevel" className="font-bold">Activity Level</Label>
-          <Select value={userGoals.activityLevel} onValueChange={handleSelectChange} >
+          <Label htmlFor="activityLevel" className="font-bold">
+            Activity Level
+          </Label>
+          <Select value={userGoals.activityLevel} onValueChange={handleSelectChange}>
             <SelectTrigger id="activityLevel">
               <SelectValue placeholder="Select activity level" />
             </SelectTrigger>

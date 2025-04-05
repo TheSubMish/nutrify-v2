@@ -26,6 +26,11 @@ export const useAppStore = create((set) => ({
         set({ userMetrics: userMetrics });
     },
 
+    weightHistory: [],
+    setWeightHistory: (weightHistory) => {
+        set({ weightHistory: weightHistory });
+    },
+
     // User preferences
     userPreferences: {},
     setUserPreferences: (userPreferences) => {

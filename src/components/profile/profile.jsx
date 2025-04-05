@@ -4,8 +4,7 @@ import { useEffect, useState } from "react"
 import ProfileHeader from "./profile-header"
 import HealthMetrics from "./health-metrics"
 import DietaryPreferences from "./dietary-preferences"
-import FitnessGoals from "./fitness-goals"
-import ProgressTracker from "./progress-tracker"
+import FitnessDashboard from "./fitness-dashboard"
 import AccountSettings from "./account-settings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Button from "@/components/ui/button"
@@ -223,18 +222,7 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FitnessGoals setActiveSave={setActiveSave} />
-              {userMetrics?.weightHistory && userData?.goals?.targetWeight ? (
-                <ProgressTracker
-                  weightHistory={userMetrics.weightHistory}
-                  targetWeight={userData.goals.targetWeight}
-                  setActiveSave={setActiveSave}
-                />
-              ) :
-                <></>
-              }
-            </div>
+            <FitnessDashboard setActiveSave={setActiveSave} />
           </TabsContent>
 
           <TabsContent value="account" className="space-y-6">

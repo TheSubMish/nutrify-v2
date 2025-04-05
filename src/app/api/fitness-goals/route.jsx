@@ -32,18 +32,35 @@ export async function GET(request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get the user's dietary preferences
-    const { data, error } = await supabase
+    // Get the user's fitness goals
+    const { data: fitnessGoals, error: fitnessError } = await supabase
         .from('fitness_goals')
         .select('*')
         .eq('user_id', user.id)
         .single()
 
-    if (error && error.code !== 'PGRST116') {
+    if (fitnessError && fitnessError.code !== 'PGRST116') {
         return NextResponse.json({ error: 'Failed to fetch fitness goals' }, { status: 500 })
     }
 
-    return NextResponse.json({ data })
+    // Get the user's weight history (sorted by date ascending)
+    const { data: weightHistory, error: weightError } = await supabase
+        .from('weight_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('recorded_at', { ascending: true });
+
+    if (weightError) {
+        return NextResponse.json({ error: 'Failed to fetch weight history' }, { status: 500 })
+    }
+
+    return NextResponse.json({
+        success: true,
+        data: {
+            fitnessGoals,
+            weightHistory
+        }
+    });
 }
 
 export async function POST(request) {
