@@ -184,7 +184,7 @@ const SidebarMenuButton = React.forwardRef(({ className, asChild = false, isActi
     <Comp
       ref={ref}
       data-active={isActive}
-      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none"
       {...props}
     />
   )

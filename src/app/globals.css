@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Slackey&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Slackey&display=swap");
 
 .gabarito-uniquifier {
   font-family: "Inter", serif;
@@ -20,17 +20,17 @@
 
 :root {
   /* Theme Colors */
-  --primary: #6A0DAD;
+  --primary: #6a0dad;
   --secondary: #147870;
-  --secondary-alt: #4A90E2;
-  --neutral-light: #F5F5F5;
-  --neutral-dark: #3A3A3A;
-  --neutral-subtext: #A9A9A9;
-  --accent: #FF4081;
-  --accent-warm: #FFD700;
-  --cta: #8A2BE2;
+  --secondary-alt: #4a90e2;
+  --neutral-light: #f5f5f5;
+  --neutral-dark: #3a3a3a;
+  --neutral-subtext: #a9a9a9;
+  --accent: #ff4081;
+  --accent-warm: #ffd700;
+  --cta: #8a2be2;
   --muted: #ff0000;
-  --muted-foreground: #A9A9A9;
+  --muted-foreground: #a9a9a9;
 
   /* Background & Foreground */
   --foreground: #ffffff;
@@ -150,4 +150,66 @@ body {
 
 .open .bar:nth-child(3) {
   transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* .peer-checked\:border-primary {
+  border-color: var(--primary);
+}
+
+.peer:checked ~ .peer-checked\:border-primary {
+  border-color: var(--primary);
+} */
+
+/* Popover background */
+.bg-popover {
+  background-color: var(--background);
+}
+
+/* Accent colors */
+.hover\:bg-accent:hover {
+  background-color: var(--accent);
+}
+.hover\:text-accent-foreground:hover {
+  color: var(--foreground);
+}
+
+/* Focus states */
+.focus-visible\:ring-2:focus-visible {
+  ring-width: 2px;
+}
+.focus-visible\:ring-ring:focus-visible {
+  ring-color: var(--primary);
+}
+
+/* Border colors */
+.border-muted {
+  border-color: var(--muted);
+}
+.border-primary {
+  border-color: var(--primary);
+}
+
+/* Text colors */
+.text-accent-foreground {
+  color: var(--foreground);
+}
+
+/* Add missing color variables */
+:root {
+  --popover: #171717;
+  --accent-foreground: #ffffff;
+  --ring: #6a0dad;
+  --ring-offset: #171717;
+}
+
+/* Animation timing */
+.animate-in {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Accessibility focus states */
+[role="radio"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }

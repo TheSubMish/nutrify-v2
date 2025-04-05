@@ -24,6 +24,8 @@ export default function GeneratePlanModal({ isOpen, onClose }) {
     })
 
     const handleInputChange = (field, value) => {
+        console.log("Field:", field, "Value:", value);
+
         setFormData({
             ...formData,
             [field]: value,
@@ -78,10 +80,10 @@ export default function GeneratePlanModal({ isOpen, onClose }) {
                             <div
                                 key={step}
                                 className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep === step
-                                    ? "border-primary tertiary-bg text-primary-foreground"
+                                    ? "tertiary-bg text-primary-foreground"
                                     : currentStep > step
-                                        ? "border-primary tertiary-bg text-primary"
-                                        : "border-muted bg-muted/20 text-muted-foreground"
+                                        ? "tertiary-bg text-primary"
+                                        : "bg-muted/20 text-muted-foreground"
                                     }`}
                             >
                                 {currentStep > step ? <Check className="h-5 w-5" stroke="#ffffff" /> : step}
@@ -102,7 +104,7 @@ export default function GeneratePlanModal({ isOpen, onClose }) {
                                     <RadioGroupItem value="weight-loss" id="weight-loss" className="peer sr-only" />
                                     <Label
                                         htmlFor="weight-loss"
-                                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "weight-loss" ? "border-primary" : "border-muted/20"}`}
                                     >
                                         <Scale className="mb-3 h-6 w-6" />
                                         <span className="font-medium">Weight Loss</span>
@@ -113,7 +115,7 @@ export default function GeneratePlanModal({ isOpen, onClose }) {
                                     <RadioGroupItem value="maintenance" id="maintenance" className="peer sr-only" />
                                     <Label
                                         htmlFor="maintenance"
-                                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "maintenance" ? "border-primary" : "border-muted/20"}`}
                                     >
                                         <Activity className="mb-3 h-6 w-6" />
                                         <span className="font-medium">Maintenance</span>
@@ -124,7 +126,7 @@ export default function GeneratePlanModal({ isOpen, onClose }) {
                                     <RadioGroupItem value="muscle-gain" id="muscle-gain" className="peer sr-only" />
                                     <Label
                                         htmlFor="muscle-gain"
-                                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "muscle-gain" ? "border-primary" : "border-muted/20"}`}
                                     >
                                         <Activity className="mb-3 h-6 w-6" />
                                         <span className="font-medium">Muscle Gain</span>
@@ -351,7 +353,7 @@ export default function GeneratePlanModal({ isOpen, onClose }) {
 
                 <DialogFooter className="flex justify-between mt-6">
                     {currentStep > 1 && (
-                        <Button variant="outline" onClick={prevStep}>
+                        <Button variant="secondary" onClick={prevStep}>
                             Back
                         </Button>
                     )}
