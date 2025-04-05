@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
 import {motion, useScroll,useMotionValueEvent} from 'framer-motion'
 import clsx from "clsx"

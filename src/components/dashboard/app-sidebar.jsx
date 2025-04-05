@@ -2,16 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import {
-  Calendar,
-  ChevronDown,
-  ChevronRight,
-  Home,
-  MessageSquare,
-  LogOut,
-  User2,
-  Utensils,
-} from "lucide-react"
+import { Calendar, ChevronDown, ChevronRight, Home, MessageSquare, LogOut, User2, Utensils } from "lucide-react"
 
 import {
   Sidebar,
@@ -25,14 +16,12 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import HamburgerMenu from "@/components/HamburgerMenu";
+} from "@/components/ui/sidebar"
+import HamburgerMenu from "@/components/HamburgerMenu"
 import { useAppStore } from "@/store"
-
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-// import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { supabase } from "@/supabase.config.mjs"
 
 // Sample dynamic data (replace with API data)
 const defaultUserData = {
@@ -72,185 +61,169 @@ const defaultUserData = {
 
 export function AppSidebar({ userData = defaultUserData }) {
   const [weeklyScheduleOpen, setWeeklyScheduleOpen] = useState(false)
-  const toggleMenu = () => setIsOpen((prev) => !prev)
   const [isOpen, setIsOpen] = useState(false)
-  const [hidden, setHidden] = useState(false);
-  const closeMenu = () => setIsOpen(false)
+  const [hidden, setHidden] = useState(false)
   const { logout } = useAppStore()
 
+  const toggleMenu = () => setIsOpen((prev) => !prev)
+  const closeMenu = () => setIsOpen(false)
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
     logout()
     // Redirect to login page after logout
-    window.location.href = "/login"
+    window.location.href = "/auth/login"
   }
 
   return (
     <SidebarProvider>
-      <Sidebar className="border-r">
-        {/* Sidebar Header */}
-        <Link
-          href="/"
-          className="items-center text-center p-6 gap-2 text-2xl md:text-3xl lg:text-4xl font-bold z-10 gabarito-uniquifier"
-        >
-          {/* <Image
-            src="/logo.png"
-            alt="Nutrifyme Logo"
-            width={48}
-            height={48}
-            className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
-          /> */}
-          <span className="text-center slackey-regular secondary">Nutrifyme</span>
-        </Link>
+      {/* Hamburger Menu for Mobile */}
+      <div
+        className="md:hidden fixed top-7 right-6 cursor-pointer z-50"
+        onClick={toggleMenu}
+        aria-expanded={isOpen}
+        aria-controls="sidebar-menu"
+      >
+        <HamburgerMenu isOpen={isOpen} />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 md:hidden ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        onClick={closeMenu}
+      />
+
+      {/* Sidebar */}
+      <div className="relative flex h-screen">
         <div
-          className="md:hidden cursor-pointer z-20"
-          onClick={toggleMenu}
-          aria-expanded={isOpen}
-          aria-controls="navbar-menu"
+          className={`fixed inset-y-0 left-0 w-[280px] md:w-auto md:relative md:translate-x-0 transform transition-transform duration-300 ease-in-out z-40 ${isOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
-          <HamburgerMenu isOpen={isOpen} />
-        </div>
-        {/* <SidebarHeader className="border-b border-border p-4">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarImage src={userData.user.avatar} alt={userData.user.name} />
-              <AvatarFallback>{userData.user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center">
-                <h3 className="font-semibold">{userData.user.name}</h3>
-                <Badge
-                  variant="outline"
-                  className="ml-2 bg-amber-100 text-amber-800 border-amber-200 text-xs"
-                  aria-label="Streak Count"
-                >
-                  <Flame className="h-3 w-3 mr-1" />
-                  {userData.user.streak} day streak
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground flex items-center">
-                <Sparkles className="h-3 w-3 mr-1 text-primary" />
-                {userData.user.plan}
-              </p>
+          <Sidebar className="border-r h-full bg-background">
+            {/* Sidebar Header */}
+            <div className="p-6 flex justify-center">
+              <Link
+                href="/"
+                className="items-center text-center gap-2 text-2xl md:text-3xl lg:text-4xl font-bold z-10 gabarito-uniquifier"
+                onClick={closeMenu}
+              >
+                <span className="text-center slackey-regular secondary">Nutrifyme</span>
+              </Link>
             </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex justify-between text-xs mb-2">
-              <span>Weight Loss Progress</span>
-              <span>{userData.user.progress}%</span>
-            </div>
-            <Progress value={userData.user.progress} className="h-2" />
-          </div>
-        </SidebarHeader> */}
 
-        {/* Sidebar Content */}
-        <SidebarContent className="overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-          {/* Navigation */}
-          <SidebarGroup>
-            {/* <SidebarGroupLabel>Navigation</SidebarGroupLabel> */}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={true}>
-                    <Link href="/dashboard">
-                      <Home className="h-4 w-4" />
-                      <span>Dashboard</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link href="/dashboard/chat">
-                      <MessageSquare className="h-4 w-4" />
-                      <span>Nutrition Coach</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link href="/dashboard/profile">
-                      <User2 className="h-4 w-4" />
-                      <span>My Profile</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* Today's Meals */}
-          <SidebarGroup>
-            <SidebarGroupLabel>Today's Meals</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {userData.mealTypes.map((meal) => (
-                  <SidebarMenuItem key={meal.name}>
-                    <SidebarMenuButton asChild>
-                      <Link href={`/dashboard/meals/${meal.name.toLowerCase()}`}>
-                        <Utensils className="h-4 w-4" />
-                        <span>{meal.name}</span>
-                        <span className="ml-auto flex items-center text-xs">
-                          {meal.completed ? (
-                            <Badge variant="outline" className="bg-[#147870] text-white py-1">
-                              Completed
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground">{meal.time}</span>
-                          )}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* Weekly Schedule */}
-          <SidebarGroup>
-            <Collapsible open={weeklyScheduleOpen} onOpenChange={setWeeklyScheduleOpen} className="w-full">
-              <SidebarGroupLabel asChild>
-                <CollapsibleTrigger className="flex w-full items-center justify-between">
-                  <span>Weekly Schedule</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${weeklyScheduleOpen ? "rotate-180" : ""}`} />
-                </CollapsibleTrigger>
-              </SidebarGroupLabel>
-              <CollapsibleContent>
+            {/* Sidebar Content */}
+            <SidebarContent className="overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              {/* Navigation */}
+              <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {userData.weekDays.map((day) => (
-                      <SidebarMenuItem key={day.day}>
-                        <SidebarMenuButton asChild isActive={day.isActive} onClick={(e) => e.stopPropagation()}>
-                          <Link href={`/dashboard/schedule?${day.day.toLowerCase()}`}>
-                            <Calendar className="h-4 w-4" />
-                            <span>{day.day}</span>
-                            {day.isActive && <ChevronRight className="ml-auto h-4 w-4" />}
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={true} onClick={closeMenu}>
+                        <Link href="/dashboard">
+                          <Home className="h-4 w-4" />
+                          <span>Dashboard</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild onClick={closeMenu}>
+                        <Link href="/dashboard/chat">
+                          <MessageSquare className="h-4 w-4" />
+                          <span>Nutrition Coach</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild onClick={closeMenu}>
+                        <Link href="/dashboard/profile">
+                          <User2 className="h-4 w-4" />
+                          <span>My Profile</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
+              {/* Today's Meals */}
+              <SidebarGroup>
+                <SidebarGroupLabel>Today's Meals</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {userData.mealTypes.map((meal) => (
+                      <SidebarMenuItem key={meal.name}>
+                        <SidebarMenuButton asChild onClick={closeMenu}>
+                          <Link href={`/dashboard/meals/${meal.name.toLowerCase()}`}>
+                            <Utensils className="h-4 w-4" />
+                            <span>{meal.name}</span>
+                            <span className="ml-auto flex items-center text-xs">
+                              {meal.completed ? (
+                                <Badge variant="outline" className="bg-[#147870] text-white py-1">
+                                  Completed
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">{meal.time}</span>
+                              )}
+                            </span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
-              </CollapsibleContent>
-            </Collapsible>
-          </SidebarGroup>
-        </SidebarContent>
+              </SidebarGroup>
 
-        {/* Sidebar Footer */}
-        <SidebarFooter className="border-t border-border p-4">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <div>
-                  <LogOut className="h-4 w-4" onClick={handleSignOut} />
-                  <span>Sign-Out</span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
+              {/* Weekly Schedule */}
+              <SidebarGroup>
+                <Collapsible open={weeklyScheduleOpen} onOpenChange={setWeeklyScheduleOpen} className="w-full">
+                  <SidebarGroupLabel asChild>
+                    <CollapsibleTrigger className="flex w-full items-center justify-between">
+                      <span>Weekly Schedule</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${weeklyScheduleOpen ? "rotate-180" : ""}`}
+                      />
+                    </CollapsibleTrigger>
+                  </SidebarGroupLabel>
+                  <CollapsibleContent>
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {userData.weekDays.map((day) => (
+                          <SidebarMenuItem key={day.day}>
+                            <SidebarMenuButton asChild isActive={day.isActive} onClick={closeMenu}>
+                              <Link href={`/dashboard/schedule?${day.day.toLowerCase()}`}>
+                                <Calendar className="h-4 w-4" />
+                                <span>{day.day}</span>
+                                {day.isActive && <ChevronRight className="ml-auto h-4 w-4" />}
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarGroup>
+            </SidebarContent>
+
+            {/* Sidebar Footer */}
+            <SidebarFooter className="border-t border-border p-4">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <div onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign-Out</span>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarFooter>
+            <SidebarRail />
+          </Sidebar>
+        </div>
+      </div>
     </SidebarProvider>
   )
 }
+

@@ -14,18 +14,20 @@ import { formatDate } from "@/utils/formatDate"
 import { supabase } from "@/supabase.config.mjs"
 import { toast } from "sonner"
 import { saveHealthMetrics } from "@/utils/savehealthMetrics"
+import { useRouter } from "next/navigation"
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal")
   const { user, userMetrics, setUserMetrics, userPreferences, userGoals, userSettings } = useAppStore()
   const [userData, setUser] = useState({})
-
+  const router = useRouter()
   const [activeSave, setActiveSave] = useState(false)
   const [isLoading, setIsLoading] = useState(false) // for save changes loading state
   const [loading, setLoading] = useState(true) // for initial loading state
 
   useEffect(() => {
     if (!user) {
+      router.push("/auth/login")
       toast.error("Please log in to access your profile.");
       return;
     }
