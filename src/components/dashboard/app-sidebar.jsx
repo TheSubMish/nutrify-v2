@@ -2,17 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import {
   Calendar,
   ChevronDown,
   ChevronRight,
-  Flame,
-  Heart,
   Home,
   MessageSquare,
-  Settings,
-  Sparkles,
+  LogOut,
   User2,
   Utensils,
 } from "lucide-react"
@@ -24,7 +20,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -32,6 +27,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import HamburgerMenu from "@/components/HamburgerMenu";
+import { useAppStore } from "@/store"
 
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 // import { Progress } from "@/components/ui/progress"
@@ -80,6 +76,14 @@ export function AppSidebar({ userData = defaultUserData }) {
   const [isOpen, setIsOpen] = useState(false)
   const [hidden, setHidden] = useState(false);
   const closeMenu = () => setIsOpen(false)
+  const { logout } = useAppStore()
+
+
+  const handleSignOut = () => {
+    logout()
+    // Redirect to login page after logout
+    window.location.href = "/login"
+  }
 
   return (
     <SidebarProvider>
@@ -148,26 +152,26 @@ export function AppSidebar({ userData = defaultUserData }) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={true}>
-                    <a href="/dashboard">
+                    <Link href="/dashboard">
                       <Home className="h-4 w-4" />
                       <span>Dashboard</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href="/dashboard/chat">
+                    <Link href="/dashboard/chat">
                       <MessageSquare className="h-4 w-4" />
                       <span>Nutrition Coach</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href="/dashboard/profile">
+                    <Link href="/dashboard/profile">
                       <User2 className="h-4 w-4" />
                       <span>My Profile</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -182,7 +186,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                 {userData.mealTypes.map((meal) => (
                   <SidebarMenuItem key={meal.name}>
                     <SidebarMenuButton asChild>
-                      <a href={`/dashboard/meals/${meal.name.toLowerCase()}`}>
+                      <Link href={`/dashboard/meals/${meal.name.toLowerCase()}`}>
                         <Utensils className="h-4 w-4" />
                         <span>{meal.name}</span>
                         <span className="ml-auto flex items-center text-xs">
@@ -194,7 +198,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                             <span className="text-muted-foreground">{meal.time}</span>
                           )}
                         </span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -217,11 +221,11 @@ export function AppSidebar({ userData = defaultUserData }) {
                     {userData.weekDays.map((day) => (
                       <SidebarMenuItem key={day.day}>
                         <SidebarMenuButton asChild isActive={day.isActive} onClick={(e) => e.stopPropagation()}>
-                          <a href={`/dashboard/schedule/${day.day.toLowerCase()}`}>
+                          <Link href={`/dashboard/schedule?${day.day.toLowerCase()}`}>
                             <Calendar className="h-4 w-4" />
                             <span>{day.day}</span>
                             {day.isActive && <ChevronRight className="ml-auto h-4 w-4" />}
-                          </a>
+                          </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
@@ -237,10 +241,10 @@ export function AppSidebar({ userData = defaultUserData }) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <a href="/dashboard/settings">
-                  <Settings className="h-4 w-4" />
-                  <span>Settings</span>
-                </a>
+                <div>
+                  <LogOut className="h-4 w-4" onClick={handleSignOut} />
+                  <span>Sign-Out</span>
+                </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
