@@ -14,11 +14,10 @@ import { formatDate } from "@/utils/formatDate"
 import { supabase } from "@/supabase.config.mjs"
 import { toast } from "sonner"
 import { saveHealthMetrics } from "@/utils/savehealthMetrics"
-import { se } from "date-fns/locale"
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal")
-  const { user, userMetrics, setUserMetrics, userPreferences, userGoals } = useAppStore()
+  const { user, userMetrics, setUserMetrics, userPreferences, userGoals, userSettings } = useAppStore()
   const [userData, setUser] = useState({})
 
   const [activeSave, setActiveSave] = useState(false)
@@ -148,6 +147,28 @@ export default function Profile() {
             toast.success("Dietary preferences updated successfully!");
           }
           break;
+        
+      case "account":
+        const accountResponse = await fetch('/api/account-setting', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userData.id,
+            user_setting: userSettings
+          }),
+        });
+
+        result = await accountResponse.json();
+
+        if (!result.success) {
+          toast.error(result.message);
+        } else {
+          setActiveSave(false)
+          toast.success("Account settings updated successfully!");
+        }
+        break;
 
       default:
         break;

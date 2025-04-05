@@ -43,5 +43,10 @@ export const useAppStore = create((set) => ({
         set({ userGoals: userGoals });
     },
 
+    // User settings
+    userSettings: {},
+    setUserSettings: (userSettings) => {
+        set({ userSettings: userSettings });
+    },
     
 }));
