@@ -144,7 +144,7 @@ export default function SchedulePage() {
             <p className="text-muted-foreground">{dateRangeText}</p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" size="sm" onClick={handleAddMeal}>
+            <Button variant="primary" size="sm" onClick={handleAddMeal}>
               <Plus className="mr-2 h-4 w-4" />
               Add Meal
             </Button>
@@ -153,7 +153,7 @@ export default function SchedulePage() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleToday}>
+            <Button variant="tertiary" size="sm" onClick={handleToday}>
               Today
             </Button>
             <Button variant="outline" size="icon" onClick={handlePrevious}>

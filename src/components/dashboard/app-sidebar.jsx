@@ -207,7 +207,7 @@ export function AppSidebar({ userData = defaultUserData }) {
             </SidebarContent>
 
             {/* Sidebar Footer */}
-            <SidebarFooter className="border-t border-border p-4">
+            <SidebarFooter className="border-t border-border p-4 mt-auto">
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
