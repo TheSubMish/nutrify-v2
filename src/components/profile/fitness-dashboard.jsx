@@ -5,7 +5,6 @@ import FitnessGoals from "./fitness-goals"
 import ProgressTracker from "./progress-tracker"
 import { useAppStore } from "@/store"
 import { toast } from "sonner"
-import { getFitnessGoals } from "@/utils/getFitnessGoals.mjs"
 
 export default function FitnessDashboard({ setActiveSave }) {
     const { user, userMetrics, userGoals, setUserGoals, weightHistory, setWeightHistory } = useAppStore()
@@ -42,6 +41,7 @@ export default function FitnessDashboard({ setActiveSave }) {
                 }
 
                 const response = await res.json()
+                const message = response.message
                 const { fitnessGoals, weightHistory } = response.data
 
                 const defaultGoals = {
@@ -70,6 +70,9 @@ export default function FitnessDashboard({ setActiveSave }) {
                 })
 
                 // setUserMetrics({ weightHistory: weightHistory ?? [] })
+                if (message){
+                    toast.success(message)
+                }
 
                 setWeightHistory([weightHistory] ?? [])
                 setTargetWeight(fitnessGoals?.target_weight ?? 0)

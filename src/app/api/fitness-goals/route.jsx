@@ -1,10 +1,13 @@
 import { supabase } from '@/supabase.config.mjs';
 import { NextResponse } from 'next/server';
 import { parse } from 'cookie';
+import { getFitnessGoals } from '@/utils/getFitnessGoals.mjs';
+import { useAppStore } from '@/store';
 
 export async function GET(request) {
     const cookies = parse(request.headers.get('cookie') || '');
     const sessionCookie = JSON.parse(cookies['sb-tsttcdnsxisaewbtricp-auth-token'] || '{}');
+    const { userMetrics } = useAppStore.getState();
 
     if (!sessionCookie?.[0]) {
         return Response.json({
@@ -33,7 +36,7 @@ export async function GET(request) {
     }
 
     // Get the user's fitness goals
-    const { data: fitnessGoals, error: fitnessError } = await supabase
+    let { data: fitnessGoals, error: fitnessError } = await supabase
         .from('fitness_goals')
         .select('*')
         .eq('user_id', user.id)
@@ -43,6 +46,18 @@ export async function GET(request) {
         return NextResponse.json({ error: 'Failed to fetch fitness goals' }, { status: 500 })
     }
 
+    const defaultGoals = {
+        target_weight: 0,
+        weekly_weight_change: 0,
+        activity_level: "moderate",
+        calorie_goal: 0,
+        protein_goal: 0,
+        carbs_goal: 0,
+        fat_goal: 0,
+        fiber_goal: 0,
+        sugar_goal: 0
+    }
+
     // Get the user's weight history (sorted by date ascending)
     const { data: weightHistory, error: weightError } = await supabase
         .from('weight_history')
@@ -50,12 +65,19 @@ export async function GET(request) {
         .eq('user_id', user.id)
         .order('recorded_at', { ascending: true });
 
+    let message = null;
+    if (!fitnessGoals) {
+        fitnessGoals = await getFitnessGoals(userMetrics, weightHistory, defaultGoals)
+        message = "Please update your fitness goals"
+    }
+
     if (weightError) {
         return NextResponse.json({ error: 'Failed to fetch weight history' }, { status: 500 })
     }
 
     return NextResponse.json({
         success: true,
+        message: message,
         data: {
             fitnessGoals,
             weightHistory
