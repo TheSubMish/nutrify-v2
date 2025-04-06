@@ -12,11 +12,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react"
 import { callAi } from "@/utils/callAi"
 import { toast } from "sonner"
+import { useAppStore } from "@/store"
 
 export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, selectedTime }) {
-  // State to manage meal data
+  const { user } = useAppStore()
   const [findActivate, setFindActivate] = useState(false)
   const [finding, setFinding] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [mealData, setMealData] = useState({
     title: "",
     date: selectedDate || new Date(),
@@ -34,6 +36,11 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
     fat: "",
   })
 
+  if (!user){
+    toast.error("Please login to add meals")
+    return <></>
+  }
+
   const handleChange = (field, value) => {
 
     if (field === "title") {
@@ -50,9 +57,36 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async  (e) => {
     e.preventDefault()
-    onSave(mealData)
+    setSaving(true)
+    try {
+      
+      const response = await fetch("/api/meals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          meal: mealData
+        })
+      })
+
+      const { data, success } = await response.json()
+
+      if (!success) {
+        toast.error("Failed to save meal data")
+        console.error("Error saving meal data:", data)
+        return
+      }
+
+      onSave(mealData)
+    } catch (error) {
+      console.error("Error saving meal data:", error)
+      toast.error("Failed to save meal data")
+    }
+    setSaving(false)
   }
 
 
@@ -229,7 +263,7 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">Save Meal</Button>
+            <Button type="submit">{ saving? "Saving" : "Save Meal" }</Button>
           </DialogFooter>
         </form>
       </DialogContent>
