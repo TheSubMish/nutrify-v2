@@ -174,12 +174,12 @@ body {
 }
 
 /* Focus states */
-.focus-visible\:ring-2:focus-visible {
+/* .focus-visible\:ring-2:focus-visible {
   ring-width: 2px;
 }
 .focus-visible\:ring-ring:focus-visible {
   ring-color: var(--primary);
-}
+} */
 
 /* Border colors */
 .border-muted {

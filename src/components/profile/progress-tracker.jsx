@@ -117,7 +117,7 @@ export default function ProgressTracker({ weightHistory, targetWeight }) {
             <div className="text-xl font-semibold">{targetWeight} kg</div>
           </div>
           <div className="border-2 border-gray-400 rounded-lg p-3 text-center">
-            <div className="text-sm text-muted-foreground">Weight {(flattenedHistory[0].weight) > targetWeight ? "Lost" : "Gained"}</div>
+            <div className="text-sm text-muted-foreground">Weight {(flattenedHistory[0].weight) > flattenedHistory[flattenedHistory.length - 1].weight ? "Lost" : "Gained"}</div>
             <div className="text-xl font-semibold">
               {(flattenedHistory[0].weight - flattenedHistory[flattenedHistory.length - 1].weight).toFixed(1)} kg
             </div>

@@ -5,9 +5,10 @@ import FitnessGoals from "./fitness-goals"
 import ProgressTracker from "./progress-tracker"
 import { useAppStore } from "@/store"
 import { toast } from "sonner"
+import { getFitnessGoals } from "@/utils/getFitnessGoals.mjs"
 
 export default function FitnessDashboard({ setActiveSave }) {
-    const { user, userMetrics, setUserGoals, weightHistory, setWeightHistory } = useAppStore()
+    const { user, userMetrics, userGoals, setUserGoals, weightHistory, setWeightHistory } = useAppStore()
     const [loading, setLoading] = useState(true)
 
     const [targetWeight, setTargetWeight] = useState(0)
@@ -19,6 +20,15 @@ export default function FitnessDashboard({ setActiveSave }) {
                 setLoading(false)
                 return
             }
+
+            // console.log(weightHistory);
+            
+
+            // Check if userMetrics is available
+            // if ((userGoals && Object.keys(userGoals).length > 0)){
+            //     setLoading(false)
+            //     return
+            // }
 
             try {
                 setLoading(true)
