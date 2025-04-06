@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks } from "date-fns"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import Button from "@/components/ui/button"
@@ -15,82 +15,27 @@ export default function SchedulePage() {
   const [view, setView] = useState("week")
   const [showAddMealModal, setShowAddMealModal] = useState(false)
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null)
+  const [mealEvents, setMealEvents] = useState([])
 
   // Sample meal schedule data - would come from API in real implementation
-  const [mealEvents, setMealEvents] = useState([
-    {
-      id: 1,
-      title: "Breakfast - Greek Yogurt Bowl",
-      date: new Date(2025, 2, 1),
-      startTime: "08:00",
-      endTime: "08:30",
-      type: "breakfast",
-      calories: 320,
-      protein: 22,
-      carbs: 40,
-      fat: 8,
-    },
-    {
-      id: 2,
-      title: "Lunch - Grilled Chicken Salad",
-      date: new Date(2025, 2, 1),
-      startTime: "13:00",
-      endTime: "13:30",
-      type: "lunch",
-      calories: 450,
-      protein: 35,
-      carbs: 25,
-      fat: 15,
-    },
-    {
-      id: 3,
-      title: "Snack - Apple & Almond Butter",
-      date: new Date(2025, 2, 1),
-      startTime: "16:00",
-      endTime: "16:15",
-      type: "snack",
-      calories: 200,
-      protein: 5,
-      carbs: 25,
-      fat: 10,
-    },
-    {
-      id: 4,
-      title: "Dinner - Salmon with Roasted Vegetables",
-      date: new Date(2025, 2, 1),
-      startTime: "19:00",
-      endTime: "19:30",
-      type: "dinner",
-      calories: 520,
-      protein: 40,
-      carbs: 30,
-      fat: 22,
-    },
-    {
-      id: 5,
-      title: "Breakfast - Avocado Toast",
-      date: new Date(2025, 2, 2),
-      startTime: "08:00",
-      endTime: "08:30",
-      type: "breakfast",
-      calories: 350,
-      protein: 15,
-      carbs: 35,
-      fat: 18,
-    },
-    {
-      id: 6,
-      title: "Lunch - Quinoa Bowl",
-      date: new Date(2025, 2, 2),
-      startTime: "12:30",
-      endTime: "13:00",
-      type: "lunch",
-      calories: 420,
-      protein: 20,
-      carbs: 50,
-      fat: 12,
-    },
-  ])
+
+  useEffect(() => {
+    const fetchMeals = async () => {
+      const response = await fetch("/api/meals")
+      const data = await response.json()
+
+      if (data.success) {
+        setMealEvents(data.data)
+      } else {
+        console.error("Failed to fetch meals:", data.message)
+      }
+    }
+    fetchMeals()
+  }, [])
+
+  useEffect(() => {
+    console.log("Updated meals:", mealEvents);
+  }, [mealEvents]);
 
   const handlePrevious = () => {
     if (view === "week") {

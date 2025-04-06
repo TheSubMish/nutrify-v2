@@ -263,7 +263,7 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">{ saving? "Saving" : "Save Meal" }</Button>
+            <Button type="submit" disabled={saving} >{ saving? "Saving" : "Save Meal" }</Button>
           </DialogFooter>
         </form>
       </DialogContent>

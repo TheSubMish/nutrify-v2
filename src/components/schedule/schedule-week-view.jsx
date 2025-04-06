@@ -19,12 +19,13 @@ export default function ScheduleWeekView({ currentDate, mealEvents, onAddMeal })
     onAddMeal({ date: day, time })
   }
 
-  // Get events for a specific day and time slot
   const getEventsForSlot = (day, timeSlot) => {
     return mealEvents.filter((event) => {
-      return isSameDay(event.date, day) && event.startTime === timeSlot
-    })
-  }
+      const eventDate = typeof event.date === 'string' ? new Date(event.date) : event.date;
+      const eventStartTime = event.startTime || event.starttime;
+      return isSameDay(eventDate, day) && eventStartTime === timeSlot;
+    });
+  };
 
   return (
     <div className="overflow-auto">
