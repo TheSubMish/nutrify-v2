@@ -11,9 +11,19 @@ const timeSlots = Array.from({ length: 33 }, (_, i) => {
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
 })
 
-export default function ScheduleDayView({ currentDate, mealEvents, onAddMeal }) {
+export default function ScheduleDayView({
+  currentDate,
+  mealEvents,
+  onAddMeal,
+  onEditMeal,
+  onDuplicateMeal,
+  onDeleteMeal,
+}) {
   // Get events for the current day
-  const dayEvents = mealEvents.filter((event) => isSameDay(event.date, currentDate))
+  const dayEvents = mealEvents.filter((event) => {
+    const eventDate = typeof event.date === "string" ? new Date(event.date) : event.date
+    return isSameDay(eventDate, currentDate)
+  })
 
   const handleCellClick = (time) => {
     onAddMeal({ date: currentDate, time })
@@ -21,7 +31,10 @@ export default function ScheduleDayView({ currentDate, mealEvents, onAddMeal }) 
 
   // Get events for a specific time slot
   const getEventsForSlot = (timeSlot) => {
-    return dayEvents.filter((event) => event.startTime === timeSlot)
+    return dayEvents.filter((event) => {
+      const eventStartTime = event.startTime || event.starttime
+      return eventStartTime === timeSlot
+    })
   }
 
   return (
@@ -44,7 +57,14 @@ export default function ScheduleDayView({ currentDate, mealEvents, onAddMeal }) 
                 <div className="p-2 border-r bg-muted/50 text-xs text-center">{time}</div>
                 <div className="p-2 min-h-[80px] relative" onClick={() => handleCellClick(time)}>
                   {events.map((event) => (
-                    <MealEvent key={event.id} event={event} isDetailView={true} />
+                    <MealEvent
+                      key={event.id}
+                      event={event}
+                      isDetailView={true}
+                      onEdit={onEditMeal}
+                      onDuplicate={onDuplicateMeal}
+                      onDelete={onDeleteMeal}
+                    />
                   ))}
                 </div>
               </div>

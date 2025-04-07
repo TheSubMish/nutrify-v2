@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Utensils, Coffee, Apple, Drumstick, MoreHorizontal } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -7,32 +9,32 @@ import Button from "@/components/ui/button"
 const mealTypeConfig = {
   breakfast: {
     icon: Coffee,
-    bgColor: "bg-blue-100 dark:bg-blue-900/30",
-    borderColor: "border-blue-300 dark:border-blue-700",
-    textColor: "text-blue-700 dark:text-blue-300",
+    bgColor: "bg-[#f3e6ff] dark:bg-[#6a0dad]/10", // soft violet background
+    borderColor: "border-[#c084fc] dark:border-[#6a0dad]",
+    textColor: "text-[#6a0dad]",
   },
   lunch: {
     icon: Utensils,
-    bgColor: "bg-green-100 dark:bg-green-900/30",
-    borderColor: "border-green-300 dark:border-green-700",
-    textColor: "text-green-700 dark:text-green-300",
+    bgColor: "bg-[#d4f3ef] dark:bg-[#147870]/30", // soft teal background
+    borderColor: "border-[#60cfc7] dark:border-[#147870]",
+    textColor: "text-[#147870]",
   },
   dinner: {
     icon: Drumstick,
-    bgColor: "bg-purple-100 dark:bg-purple-900/30",
-    borderColor: "border-purple-300 dark:border-purple-700",
-    textColor: "text-purple-700 dark:text-purple-300",
+    bgColor: "bg-[#fce4ec] dark:bg-[#ff4081]/30", // soft pink background
+    borderColor: "border-[#f48fb1] dark:border-[#ff4081]",
+    textColor: "text-[#ff4081]",
   },
   snack: {
     icon: Apple,
-    bgColor: "bg-amber-100 dark:bg-amber-900/30",
-    borderColor: "border-amber-300 dark:border-amber-700",
-    textColor: "text-amber-700 dark:text-amber-300",
+    bgColor: "bg-[#e0e0e0] dark:bg-[#374151]/30", // muted neutral
+    borderColor: "border-[#9e9e9e] dark:border-[#374151]",
+    textColor: "text-[#374151]",
   },
 }
 
-export default function MealEvent({ event, isDetailView = false }) {
-  const { title, type, startTime, endTime, calories, protein, carbs, fat } = event
+export default function MealEvent({ event, isDetailView = false, onEdit, onDuplicate, onDelete }) {
+  const { title, type, starttime, endtime, calories, protein, carbs, fat } = event
 
   // Get the configuration for this meal type
   const config = mealTypeConfig[type] || {
@@ -43,6 +45,22 @@ export default function MealEvent({ event, isDetailView = false }) {
   }
 
   const Icon = config.icon
+
+  // Handle dropdown menu actions
+  const handleEdit = (e) => {
+    e.stopPropagation() // Prevent event bubbling
+    onEdit(event)
+  }
+
+  const handleDuplicate = (e) => {
+    e.stopPropagation() // Prevent event bubbling
+    onDuplicate(event)
+  }
+
+  const handleDelete = (e) => {
+    e.stopPropagation() // Prevent event bubbling
+    onDelete(event)
+  }
 
   return (
     <div
@@ -68,15 +86,15 @@ export default function MealEvent({ event, isDetailView = false }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-              <DropdownMenuItem>Duplicate</DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDuplicate}>Duplicate</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         <div className="text-xs text-muted-foreground">
-          {startTime} - {endTime}
+          {starttime} - {endtime}
         </div>
 
         {isDetailView && (

@@ -10,31 +10,40 @@ const timeSlots = Array.from({ length: 33 }, (_, i) => {
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
 })
 
-export default function ScheduleWeekView({ currentDate, mealEvents, onAddMeal }) {
+export default function ScheduleWeekView({
+  currentDate,
+  mealEvents,
+  onAddMeal,
+  onEditMeal,
+  onDuplicateMeal,
+  onDeleteMeal,
+}) {
   const startDate = startOfWeek(currentDate, { weekStartsOn: 0 })
   const endDate = endOfWeek(currentDate, { weekStartsOn: 0 })
   const days = eachDayOfInterval({ start: startDate, end: endDate })
 
   const handleCellClick = (day, time) => {
+    console.log("Clicked cell:", day, time)
+
     onAddMeal({ date: day, time })
   }
 
   const getEventsForSlot = (day, timeSlot) => {
     return mealEvents.filter((event) => {
-      const eventDate = typeof event.date === 'string' ? new Date(event.date) : event.date;
-      const eventStartTime = event.startTime || event.starttime;
-      return isSameDay(eventDate, day) && eventStartTime === timeSlot;
-    });
-  };
+      const eventDate = typeof event.date === "string" ? new Date(event.date) : event.date
+      const eventStartTime = event.startTime || event.starttime
+      return isSameDay(eventDate, day) && eventStartTime === timeSlot
+    })
+  }
 
   return (
     <div className="overflow-auto">
       <div className="min-w-[800px]">
         {/* Header with days */}
         <div className="grid grid-cols-8 border-b">
-          <div className="p-2 border-r bg-muted/50 text-center font-medium">Time</div>
+          <div className="p-2 border-r text-center font-medium">Time</div>
           {days.map((day, i) => (
-            <div key={i} className={cn("p-2 text-center font-medium", isSameDay(day, new Date()) && "bg-primary/10")}>
+            <div key={i} className={cn("p-2 text-center border-2 font-medium", isSameDay(day, new Date()))}>
               <div>{format(day, "EEE")}</div>
               <div className="text-sm">{format(day, "MMM d")}</div>
             </div>
@@ -45,7 +54,7 @@ export default function ScheduleWeekView({ currentDate, mealEvents, onAddMeal })
         <div>
           {timeSlots.map((time, timeIndex) => (
             <div key={time} className="grid grid-cols-8 border-b">
-              <div className="p-2 border-r bg-muted/50 text-xs text-center">{time}</div>
+              <div className="p-2 border-r text-xs text-center">{time}</div>
 
               {days.map((day, dayIndex) => {
                 const events = getEventsForSlot(day, time)
@@ -54,13 +63,19 @@ export default function ScheduleWeekView({ currentDate, mealEvents, onAddMeal })
                     key={dayIndex}
                     className={cn(
                       "p-1 min-h-[60px] border-r relative",
-                      isSameDay(day, new Date()) && "bg-primary/5",
+                      isSameDay(day, new Date()),
                       timeIndex % 2 === 0 && "border-b border-dashed",
                     )}
                     onClick={() => handleCellClick(day, time)}
                   >
                     {events.map((event) => (
-                      <MealEvent key={event.id} event={event} />
+                      <MealEvent
+                        key={event.id}
+                        event={event}
+                        onEdit={onEditMeal}
+                        onDuplicate={onDuplicateMeal}
+                        onDelete={onDeleteMeal}
+                      />
                     ))}
                   </div>
                 )

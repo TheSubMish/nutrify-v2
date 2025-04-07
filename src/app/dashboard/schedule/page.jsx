@@ -16,8 +16,8 @@ export default function SchedulePage() {
   const [showAddMealModal, setShowAddMealModal] = useState(false)
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null)
   const [mealEvents, setMealEvents] = useState([])
-
-  // Sample meal schedule data - would come from API in real implementation
+  const [mealToEdit, setMealToEdit] = useState(null)
+  const [mealTypeFilter, setMealTypeFilter] = useState("all")
 
   useEffect(() => {
     const fetchMeals = async () => {
@@ -34,8 +34,8 @@ export default function SchedulePage() {
   }, [])
 
   useEffect(() => {
-    console.log("Updated meals:", mealEvents);
-  }, [mealEvents]);
+    console.log("Updated meals:", mealEvents)
+  }, [mealEvents])
 
   const handlePrevious = () => {
     if (view === "week") {
@@ -59,17 +59,68 @@ export default function SchedulePage() {
 
   const handleAddMeal = (timeSlot) => {
     setSelectedTimeSlot(timeSlot)
+    setMealToEdit(null) // Ensure we're not in edit mode
     setShowAddMealModal(true)
   }
 
-  const handleSaveMeal = (mealData) => {
-    const newMeal = {
-      id: mealEvents.length + 1,
-      ...mealData,
-    }
-    setMealEvents([...mealEvents, newMeal])
-    setShowAddMealModal(false)
+  const handleEditMeal = (meal) => {
+    setMealToEdit(meal)
+    setSelectedTimeSlot(null) // Clear any selected time slot
+    setShowAddMealModal(true)
   }
+
+  const handleDuplicateMeal = (meal) => {
+    // Create a duplicate meal without an ID (will be assigned when saved)
+    const duplicatedMeal = {
+      ...meal,
+      id: null,
+      title: `${meal.title} (Copy)`,
+    }
+    setMealToEdit(duplicatedMeal)
+    setShowAddMealModal(true)
+  }
+
+  const handleDeleteMeal = (meal) => {
+    // Filter out the meal to delete
+    setMealEvents(mealEvents.filter((event) => event.id !== meal.id))
+
+    // In a real app, you would also make an API call to delete from the database
+    // Example:
+    // fetch(`/api/meals/${meal.id}`, { method: 'DELETE' })
+    //   .then(response => response.json())
+    //   .then(data => {
+    //     if (data.success) {
+    //       setMealEvents(mealEvents.filter(event => event.id !== meal.id))
+    //     } else {
+    //       console.error("Failed to delete meal:", data.message)
+    //     }
+    //   })
+  }
+
+  const handleSaveMeal = (mealData) => {
+    if (mealData.id) {
+      // Update existing meal
+      setMealEvents(mealEvents.map((event) => (event.id === mealData.id ? mealData : event)))
+    } else {
+      // Add new meal
+      const newMeal = {
+        id: mealEvents.length + 1,
+        ...mealData,
+      }
+      setMealEvents([...mealEvents, newMeal])
+    }
+
+    setShowAddMealModal(false)
+    setMealToEdit(null)
+  }
+
+  const handleFilterChange = (value) => {
+    setMealTypeFilter(value)
+  }
+
+  // Filter meals based on selected meal type
+  const filteredMealEvents =
+    mealTypeFilter === "all" ? mealEvents : mealEvents.filter((event) => event.type === mealTypeFilter)
 
   // Get the date range for the header
   const startDate = view === "week" ? startOfWeek(currentDate, { weekStartsOn: 0 }) : currentDate
@@ -89,7 +140,7 @@ export default function SchedulePage() {
             <p className="text-muted-foreground">{dateRangeText}</p>
           </div>
           <div className="flex gap-3">
-            <Button variant="primary" size="sm" onClick={handleAddMeal}>
+            <Button variant="primary" size="sm" onClick={() => handleAddMeal({ date: currentDate })}>
               <Plus className="mr-2 h-4 w-4" />
               Add Meal
             </Button>
@@ -112,12 +163,16 @@ export default function SchedulePage() {
           <div className="flex items-center gap-4">
             <Tabs value={view} onValueChange={setView} className="w-[200px]">
               <TabsList className="grid w-full grid-cols-2 gap-x-2">
-                <TabsTrigger value="day" className={`border-primary border-2 ${ view==="day"? "primary-bg": ""}`}>Day</TabsTrigger>
-                <TabsTrigger value="week" className={`border-primary border-2 ${ view==="week"? "primary-bg": ""}`}>Week</TabsTrigger>
+                <TabsTrigger value="day" className={`border-primary border-2 ${view === "day" ? "primary-bg" : ""}`}>
+                  Day
+                </TabsTrigger>
+                <TabsTrigger value="week" className={`border-primary border-2 ${view === "week" ? "primary-bg" : ""}`}>
+                  Week
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
-            <Select defaultValue="all">
+            <Select value={mealTypeFilter} onValueChange={handleFilterChange}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by meal type" />
               </SelectTrigger>
@@ -135,10 +190,24 @@ export default function SchedulePage() {
         <div className="bg-card rounded-lg border shadow-sm">
           <Tabs value={view} defaultValue="week">
             <TabsContent value="week" className="mt-0">
-              <ScheduleWeekView currentDate={currentDate} mealEvents={mealEvents} onAddMeal={handleAddMeal} />
+              <ScheduleWeekView
+                currentDate={currentDate}
+                mealEvents={filteredMealEvents}
+                onAddMeal={handleAddMeal}
+                onEditMeal={handleEditMeal}
+                onDuplicateMeal={handleDuplicateMeal}
+                onDeleteMeal={handleDeleteMeal}
+              />
             </TabsContent>
             <TabsContent value="day" className="mt-0">
-              <ScheduleDayView currentDate={currentDate} mealEvents={mealEvents} onAddMeal={handleAddMeal} />
+              <ScheduleDayView
+                currentDate={currentDate}
+                mealEvents={filteredMealEvents}
+                onAddMeal={handleAddMeal}
+                onEditMeal={handleEditMeal}
+                onDuplicateMeal={handleDuplicateMeal}
+                onDeleteMeal={handleDeleteMeal}
+              />
             </TabsContent>
           </Tabs>
         </div>
@@ -147,13 +216,16 @@ export default function SchedulePage() {
       {showAddMealModal && (
         <AddMealModal
           isOpen={showAddMealModal}
-          onClose={() => setShowAddMealModal(false)}
+          onClose={() => {
+            setShowAddMealModal(false)
+            setMealToEdit(null)
+          }}
           onSave={handleSaveMeal}
           selectedDate={selectedTimeSlot?.date || currentDate}
           selectedTime={selectedTimeSlot?.time}
+          mealToEdit={mealToEdit}
         />
       )}
     </div>
   )
 }
-
