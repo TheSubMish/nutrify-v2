@@ -81,13 +81,13 @@ export default function MealEvent({ event, isDetailView = false, onEdit, onDupli
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 -mr-1">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              {/* <Button variant="secondary" size="icon" className="h-6 w-6 ml-1 -mr-1"> */}
+                <MoreHorizontal className="h-6 w-6 text-black" />
+              {/* </Button> */}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDuplicate}>Duplicate</DropdownMenuItem>
+              {/* <DropdownMenuItem onClick={handleDuplicate}>Duplicate</DropdownMenuItem> */}
               <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

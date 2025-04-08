@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ScheduleWeekView from "@/components/schedule/schedule-week-view"
 import ScheduleDayView from "@/components/schedule/schedule-day-view"
 import AddMealModal from "@/components/schedule/add-meal-modal"
+import { useAppStore } from "@/store"
+import { toast } from "sonner"
 
 export default function SchedulePage() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -18,8 +20,15 @@ export default function SchedulePage() {
   const [mealEvents, setMealEvents] = useState([])
   const [mealToEdit, setMealToEdit] = useState(null)
   const [mealTypeFilter, setMealTypeFilter] = useState("all")
+  const { user } = useAppStore()
 
   useEffect(() => {
+
+    if (!user) {
+      console.error("User ID is not available.")
+      return
+    }
+
     const fetchMeals = async () => {
       const response = await fetch("/api/meals")
       const data = await response.json()
@@ -27,15 +36,12 @@ export default function SchedulePage() {
       if (data.success) {
         setMealEvents(data.data)
       } else {
+        toast.error("Failed to get meals")
         console.error("Failed to fetch meals:", data.message)
       }
     }
     fetchMeals()
   }, [])
-
-  useEffect(() => {
-    console.log("Updated meals:", mealEvents)
-  }, [mealEvents])
 
   const handlePrevious = () => {
     if (view === "week") {
@@ -59,18 +65,17 @@ export default function SchedulePage() {
 
   const handleAddMeal = (timeSlot) => {
     setSelectedTimeSlot(timeSlot)
-    setMealToEdit(null) // Ensure we're not in edit mode
+    setMealToEdit(null)
     setShowAddMealModal(true)
   }
 
   const handleEditMeal = (meal) => {
     setMealToEdit(meal)
-    setSelectedTimeSlot(null) // Clear any selected time slot
+    setSelectedTimeSlot(null)
     setShowAddMealModal(true)
   }
 
   const handleDuplicateMeal = (meal) => {
-    // Create a duplicate meal without an ID (will be assigned when saved)
     const duplicatedMeal = {
       ...meal,
       id: null,
@@ -80,39 +85,75 @@ export default function SchedulePage() {
     setShowAddMealModal(true)
   }
 
-  const handleDeleteMeal = (meal) => {
-    // Filter out the meal to delete
-    setMealEvents(mealEvents.filter((event) => event.id !== meal.id))
-
-    // In a real app, you would also make an API call to delete from the database
-    // Example:
-    // fetch(`/api/meals/${meal.id}`, { method: 'DELETE' })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     if (data.success) {
-    //       setMealEvents(mealEvents.filter(event => event.id !== meal.id))
-    //     } else {
-    //       console.error("Failed to delete meal:", data.message)
-    //     }
-    //   })
-  }
-
-  const handleSaveMeal = (mealData) => {
-    if (mealData.id) {
-      // Update existing meal
-      setMealEvents(mealEvents.map((event) => (event.id === mealData.id ? mealData : event)))
-    } else {
-      // Add new meal
-      const newMeal = {
-        id: mealEvents.length + 1,
-        ...mealData,
+  const handleDeleteMeal = async (meal) => {
+    const userId = user?.id;
+  
+    try {
+      const response = await fetch('/api/meals', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: meal.id, userId })
+      });
+  
+      const result = await response.json();
+  
+      if (result.success) {
+        setMealEvents((prev) => prev.filter((event) => event.id !== meal.id));
+        toast.success("Meal deleted successfully");
+      } else {
+        toast.error("Failed to delete meal");
+        console.error("Failed to delete meal:", result.message);
       }
-      setMealEvents([...mealEvents, newMeal])
+    } catch (err) {
+      toast.error("Failed to delete meal");
+      console.error("Error deleting meal:", err);
     }
+  };
+  
 
-    setShowAddMealModal(false)
-    setMealToEdit(null)
-  }
+  const handleSaveMeal = async (mealData) => {
+    const userId = user?.id;
+    const endpoint = '/api/meals';
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+  
+    try {
+      const response = await fetch(endpoint, {
+        method: mealData.id ? 'PUT' : 'POST',
+        headers,
+        body: JSON.stringify({ userId, meal: mealData }),
+      });
+  
+      const result = await response.json();
+  
+      if (!result.success) {
+        toast.error("Failed to save meal");
+        console.error(result.message);
+        return;
+      }
+  
+      const updatedMeal = result.data[0];
+  
+      if (mealData.id) {
+        setMealEvents((prev) =>
+          prev.map((event) => (event.id === updatedMeal.id ? updatedMeal : event))
+        );
+      } else {
+        setMealEvents((prev) => [...prev, updatedMeal]);
+      }
+
+      toast.success("Meal saved successfully");
+  
+      setShowAddMealModal(false);
+      setMealToEdit(null);
+    } catch (err) {
+      console.error("Failed to save meal:", err);
+    }
+  };
+  
 
   const handleFilterChange = (value) => {
     setMealTypeFilter(value)
