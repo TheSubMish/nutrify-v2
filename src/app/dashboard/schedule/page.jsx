@@ -35,6 +35,8 @@ export default function SchedulePage() {
 
       if (data.success) {
         setMealEvents(data.data)
+        console.log("Fetched meals:", data.data);
+        
       } else {
         toast.error("Failed to get meals")
         console.error("Failed to fetch meals:", data.message)

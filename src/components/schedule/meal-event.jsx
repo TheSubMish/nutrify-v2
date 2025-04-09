@@ -1,9 +1,8 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { Utensils, Coffee, Apple, Drumstick, MoreHorizontal } from "lucide-react"
+import { Utensils, Coffee, Apple, Drumstick, MoreVertical } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import Button from "@/components/ui/button"
 
 // Map meal types to icons and colors
 const mealTypeConfig = {
@@ -52,10 +51,10 @@ export default function MealEvent({ event, isDetailView = false, onEdit, onDupli
     onEdit(event)
   }
 
-  const handleDuplicate = (e) => {
-    e.stopPropagation() // Prevent event bubbling
-    onDuplicate(event)
-  }
+  // const handleDuplicate = (e) => {
+  //   e.stopPropagation() // Prevent event bubbling
+  //   onDuplicate(event)
+  // }
 
   const handleDelete = (e) => {
     e.stopPropagation() // Prevent event bubbling
@@ -82,7 +81,7 @@ export default function MealEvent({ event, isDetailView = false, onEdit, onDupli
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               {/* <Button variant="secondary" size="icon" className="h-6 w-6 ml-1 -mr-1"> */}
-                <MoreHorizontal className="h-6 w-6 text-black" />
+                <MoreVertical className="h-6 w-6 text-black" />
               {/* </Button> */}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
