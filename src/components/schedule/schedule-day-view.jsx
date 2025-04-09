@@ -31,9 +31,35 @@ export default function ScheduleDayView({
 
   // Get events for a specific time slot
   const getEventsForSlot = (timeSlot) => {
+    const currentSlotIndex = timeSlots.indexOf(timeSlot)
+    const nextSlotTime = timeSlots[currentSlotIndex + 1]
+
     return dayEvents.filter((event) => {
       const eventStartTime = event.startTime || event.starttime
-      return eventStartTime === timeSlot
+
+      // If the event time exactly matches the slot time, include it
+      if (eventStartTime === timeSlot) return true
+
+      // If this is the last time slot, include any remaining events
+      if (!nextSlotTime) return currentSlotIndex === timeSlots.length - 1
+
+      // Find the closest time slot
+      if (eventStartTime) {
+        // Convert times to comparable format (minutes since 00:00)
+        const [eventHours, eventMinutes] = eventStartTime.split(':').map(Number)
+        const eventTotalMinutes = eventHours * 60 + eventMinutes
+
+        const [slotHours, slotMinutes] = timeSlot.split(':').map(Number)
+        const slotTotalMinutes = slotHours * 60 + slotMinutes
+
+        const [nextSlotHours, nextSlotMinutes] = nextSlotTime.split(':').map(Number)
+        const nextSlotTotalMinutes = nextSlotHours * 60 + nextSlotMinutes
+
+        // Check if event time falls between current slot and next slot
+        return eventTotalMinutes >= slotTotalMinutes && eventTotalMinutes < nextSlotTotalMinutes
+      }
+
+      return false
     })
   }
 
