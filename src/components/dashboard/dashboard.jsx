@@ -9,6 +9,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import Button from "@/components/ui/button"
 import { PlusCircle, Zap } from "lucide-react"
 import GeneratePlanModal from "./generate-plan-modal"
+// import AirQualityIndex from "./aqi"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -113,6 +114,7 @@ export default function Dashboard() {
               />
               <NutritionChart protein={102} carbs={120} fat={55} proteinGoal={120} carbsGoal={150} fatGoal={65} />
               <WaterIntake initialConsumed={5} goal={8} />
+              {/* <AirQualityIndex /> */}
             </div>
 
             <div className="mt-8">
