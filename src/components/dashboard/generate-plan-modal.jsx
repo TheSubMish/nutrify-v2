@@ -42,6 +42,55 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
     const [editingMeal, setEditingMeal] = useState(null)
     const [showEditForm, setShowEditForm] = useState(false)
 
+    const calculateMacros = async () => {
+        setStepLoading(prev => ({ ...prev, 3: true }));
+        console.log("Calculating macros based on user data...");
+
+        try {
+            // Create a prompt based on the user's data
+            const prompt = `Calculate the optimal macronutrient distribution for a person with the following characteristics:
+        Goal: ${formData.goal}
+        Activity Level: ${formData.activityLevel}
+        Diet Type: ${formData.dietType}
+        Dietary Restrictions: ${formData.dietaryRestrictions.join(", ")}
+        
+        Based on these factors, provide the recommended macronutrient distribution as a JSON object with these properties:
+        protein (percentage), carbs (percentage), fat (percentage), calorieTarget (daily calorie target).
+        
+        The percentages should add up to 100%. The calorie target should be appropriate for the person's goal and activity level.`;
+
+            const response = await callAi(prompt);
+
+            // Try to parse the response as JSON
+            try {
+                const macroData = JSON.parse(extractJson(response));
+                console.log("AI calculated macros:", macroData);
+
+                // Update the form data with the calculated values
+                setFormData(prev => ({
+                    ...prev,
+                    proteinPercentage: macroData.protein || prev.proteinPercentage,
+                    carbsPercentage: macroData.carbs || prev.carbsPercentage,
+                    fatPercentage: macroData.fat || prev.fatPercentage,
+                    calorieTarget: macroData.calorieTarget || prev.calorieTarget
+                }));
+
+                // Force a re-render to ensure the UI updates
+                setTimeout(() => {
+                    setStepLoading(prev => ({ ...prev, 3: false }));
+                }, 500);
+            } catch (error) {
+                console.error("Failed to parse AI response for macros:", error);
+                toast.error("Failed to calculate optimal macros. Using default values.");
+                setStepLoading(prev => ({ ...prev, 3: false }));
+            }
+        } catch (error) {
+            console.error("Error calculating macros:", error);
+            toast.error("Failed to calculate optimal macros. Using default values.");
+            setStepLoading(prev => ({ ...prev, 3: false }));
+        }
+    };
+
     // Fix for the user goals not showing up properly
     useEffect(() => {
         const currentStepNum = currentStep
@@ -107,6 +156,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
 
             if (currentStep === 2) {
                 if (userPreferences && Object.keys(userPreferences).length > 0) {
+
                     setFormData((prev) => ({
                         ...prev,
                         dietaryRestrictions: userPreferences.restrictions || [],
@@ -114,9 +164,6 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         mealsPerDay: Object.values(userPreferences.meal_frequency || {}).filter(Boolean).length || 4,
                         dietType: userPreferences.diet_type || "balanced",
                     }))
-                    console.log(Object.values(userPreferences.meal_frequency).filter(Boolean).length);
-
-                    console.log(formData);
 
                 } else {
                     try {
@@ -129,22 +176,18 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         })
 
                         const { data } = await response.json()
-                        console.log("Dietary preferences data:", data)
-                        setUserPreferences(data)
 
-                        setFormData((prev) => ({
-                            ...prev,
-                            dietaryRestrictions: data.restrictions || [],
-                            preferences: [...(data.allergies || []), ...(data.disliked_foods || [])],
-                            mealsPerDay: Object.values(data.meal_frequency || {}).filter(Boolean).length,
-                            dietType: data.diet_type || "balanced",
-                        }))
-                        console.log(formData);
-                        console.log(data);
+                        if (data) {
+                            setUserPreferences(data)
 
-                        console.log(Object.values(data.meal_frequency).filter(Boolean).length);
-
-
+                            setFormData((prev) => ({
+                                ...prev,
+                                dietaryRestrictions: data.restrictions || [],
+                                preferences: [...(data.allergies || []), ...(data.disliked_foods || [])],
+                                mealsPerDay: Object.values(data.meal_frequency || {}).filter(Boolean).length,
+                                dietType: data.diet_type || "balanced",
+                            }))
+                        }
 
                     } catch (error) {
                         console.error("Error fetching dietary preferences:", error)
@@ -153,6 +196,11 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         setLoading(false)
                     }
                 }
+            }
+
+            if (currentStep === 3) {
+                console.log("Calculating macros based on user data...")
+                calculateMacros()
             }
 
             setStepLoading((prev) => ({ ...prev, [currentStepNum]: false }))
@@ -205,7 +253,15 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         }
     }
 
-    const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 4))
+    const nextStep = () => {
+        const newStep = Math.min(currentStep + 1, 4);
+        setCurrentStep(newStep);
+
+        // If moving to step 3, calculate macros after changing the step
+        if (newStep === 3 && currentStep === 2) {
+            calculateMacros();
+        }
+    };
     const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1))
 
     const generatePlan = async () => {
@@ -642,8 +698,8 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
 
                                             <div
                                                 className={`text-sm ${formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage !== 100
-                                                        ? "text-destructive"
-                                                        : "text-muted-foreground"
+                                                    ? "text-destructive"
+                                                    : "text-muted-foreground"
                                                     }`}
                                             >
                                                 Total: {formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage}%
@@ -715,28 +771,28 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         </>
                     )}
                 </div>
-                    <DialogFooter className="flex justify-between mt-6">
-                        {currentStep > 1 && (
-                            <Button variant="secondary" onClick={prevStep}>
-                                Back
-                            </Button>
-                        )}
-                        <div className="flex-1"></div>
-                        {currentStep < 4 ? (
-                            <Button onClick={nextStep}>
-                                Continue <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        ) : currentStep === 4 ? (
-                            <Button onClick={generatePlan} disabled={isGenerating}>
-                                Generate Plan
-                            </Button>
-                        ) : (
-                            <Button onClick={handleSavePlan}>
-                                <Save className="mr-2 h-4 w-4" />
-                                Save Plan
-                            </Button>
-                        )}
-                    </DialogFooter>
+                <DialogFooter className="flex justify-between mt-6">
+                    {currentStep > 1 && (
+                        <Button variant="secondary" onClick={prevStep}>
+                            Back
+                        </Button>
+                    )}
+                    <div className="flex-1"></div>
+                    {currentStep < 4 ? (
+                        <Button onClick={nextStep}>
+                            Continue <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    ) : currentStep === 4 ? (
+                        <Button onClick={generatePlan} disabled={isGenerating}>
+                            Generate Plan
+                        </Button>
+                    ) : (
+                        <Button onClick={handleSavePlan}>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Plan
+                        </Button>
+                    )}
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )
