@@ -77,9 +77,6 @@ export async function POST(request) {
 
         const { userId, meal } = await request.json()
 
-        console.log("meal", meal);
-
-
         if (!userId) {
             return NextResponse.json({ success: false, message: "User ID is required" }, { status: 400 })
         }
@@ -101,12 +98,8 @@ export async function POST(request) {
             .select()
 
         if (mealError) {
-            console.error("Error saving meal data:", mealError)
             return NextResponse.json({ success: false, message: "Failed to save meal data" }, { status: 500 })
         }
-
-        console.log("mealData", mealData);
-
 
         return NextResponse.json({
             success: true,

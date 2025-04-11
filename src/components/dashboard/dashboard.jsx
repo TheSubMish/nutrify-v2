@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import MealCard from "./meal-card"
 import NutritionChart from "./nutrition-chart"
 import CalorieTracker from "./calorie-tracker"
@@ -9,79 +9,120 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import Button from "@/components/ui/button"
 import { PlusCircle, Zap } from "lucide-react"
 import GeneratePlanModal from "./generate-plan-modal"
+import { useAppStore } from "@/store"
+import { toast } from "sonner"
+import { set } from "date-fns"
 // import AirQualityIndex from "./aqi"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { user, userMeals, setUserMeals } = useAppStore()
+  const [loading, setLoading] = useState(true)
 
-  const meals = [
-    {
-      id: 1,
-      type: "Breakfast",
-      time: "8:00 AM",
-      name: "Greek Yogurt Bowl",
-      calories: 320,
-      protein: 22,
-      carbs: 40,
-      fat: 8,
-      image: "/placeholder.svg?height=100&width=150",
-    },
-    {
-      id: 2,
-      type: "Lunch",
-      time: "1:00 PM",
-      name: "Grilled Chicken Salad",
-      calories: 450,
-      protein: 35,
-      carbs: 25,
-      fat: 15,
-      image: "/placeholder.svg?height=100&width=150",
-    },
-    {
-      id: 3,
-      type: "Snack",
-      time: "4:00 PM",
-      name: "Apple & Almond Butter",
-      calories: 200,
-      protein: 5,
-      carbs: 25,
-      fat: 10,
-      image: "/placeholder.svg?height=100&width=150",
-    },
-    {
-      id: 4,
-      type: "Dinner",
-      time: "7:00 PM",
-      name: "Salmon with Roasted Vegetables",
-      calories: 520,
-      protein: 40,
-      carbs: 30,
-      fat: 22,
-      image: "/placeholder.svg?height=100&width=150",
-    },
-  ]
+  if (!user) {
+    toast.error("Please log in to view your dashboard.")
+    return null
+  }
 
-  const recommendations = [
-    {
-      id: 1,
-      title: "Increase protein intake",
-      description: "Based on your activity level, we recommend increasing your protein intake by 10g per day.",
-      impact: "high",
-    },
-    {
-      id: 2,
-      title: "Try intermittent fasting",
-      description: "Your metabolism pattern suggests intermittent fasting could help with your weight loss goals.",
-      impact: "medium",
-    },
-    {
-      id: 3,
-      title: "Add more fiber",
-      description: "Your current diet is low in fiber. Try adding more vegetables and whole grains.",
-      impact: "high",
-    },
-  ]
+  useEffect(() => {
+    setLoading(true)
+
+    const fetchMeals = async () => {
+      try {
+        const response = await fetch("/api/meals")
+        if (!response.ok) {
+          throw new Error("Failed to fetch meals")
+        }
+        const { data } = await response.json()
+        setUserMeals(data)
+      } catch (error) {
+        console.error("Error fetching meals:", error)
+      }
+    }
+
+    fetchMeals()
+
+    setLoading(false)
+  }, [])
+
+
+  // const meals = [
+  //   {
+  //     id: 1,
+  //     type: "Breakfast",
+  //     time: "8:00 AM",
+  //     name: "Greek Yogurt Bowl",
+  //     calories: 320,
+  //     protein: 22,
+  //     carbs: 40,
+  //     fat: 8,
+  //     image: "/placeholder.svg?height=100&width=150",
+  //   },
+  //   {
+  //     id: 2,
+  //     type: "Lunch",
+  //     time: "1:00 PM",
+  //     name: "Grilled Chicken Salad",
+  //     calories: 450,
+  //     protein: 35,
+  //     carbs: 25,
+  //     fat: 15,
+  //     image: "/placeholder.svg?height=100&width=150",
+  //   },
+  //   {
+  //     id: 3,
+  //     type: "Snack",
+  //     time: "4:00 PM",
+  //     name: "Apple & Almond Butter",
+  //     calories: 200,
+  //     protein: 5,
+  //     carbs: 25,
+  //     fat: 10,
+  //     image: "/placeholder.svg?height=100&width=150",
+  //   },
+  //   {
+  //     id: 4,
+  //     type: "Dinner",
+  //     time: "7:00 PM",
+  //     name: "Salmon with Roasted Vegetables",
+  //     calories: 520,
+  //     protein: 40,
+  //     carbs: 30,
+  //     fat: 22,
+  //     image: "/placeholder.svg?height=100&width=150",
+  //   },
+  // ]
+
+  // const recommendations = [
+  //   {
+  //     id: 1,
+  //     title: "Increase protein intake",
+  //     description: "Based on your activity level, we recommend increasing your protein intake by 10g per day.",
+  //     impact: "high",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Try intermittent fasting",
+  //     description: "Your metabolism pattern suggests intermittent fasting could help with your weight loss goals.",
+  //     impact: "medium",
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Add more fiber",
+  //     description: "Your current diet is low in fiber. Try adding more vegetables and whole grains.",
+  //     impact: "high",
+  //   },
+  // ]
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -126,7 +167,7 @@ export default function Dashboard() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {meals.map((meal) => (
+                {userMeals.map((meal) => (
                   <MealCard key={meal.id} meal={meal} />
                 ))}
               </div>
@@ -134,7 +175,7 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </main>
-      
+
       <GeneratePlanModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
     </div>

@@ -48,5 +48,10 @@ export const useAppStore = create((set) => ({
     setUserSettings: (userSettings) => {
         set({ userSettings: userSettings });
     },
+
+    userMeals: [],
+    setUserMeals: (userMeals) => {
+        set({ userMeals: userMeals });
+    },
     
 }));
