@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check, ArrowRight, Activity, Scale, Edit, Clock, Plus, Save } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Button from "@/components/ui/button"
@@ -11,9 +11,20 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { callAi } from "@/utils/callAi"
 import extractJson from "@/utils/extractJson"
+import { useAppStore } from "@/store"
+import { toast } from "sonner"
 
 export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
+    const { user, userPreferences, setUserPreferences, userGoals, setUserGoals } = useAppStore()
+    const [loading, setLoading] = useState(true)
     const [currentStep, setCurrentStep] = useState(1)
+    const [stepLoading, setStepLoading] = useState({
+        1: false,
+        2: false,
+        3: false,
+        4: false,
+        5: false,
+    })
     const [formData, setFormData] = useState({
         goal: "weight-loss",
         activityLevel: "moderate",
@@ -24,11 +35,144 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         carbsPercentage: 40,
         fatPercentage: 30,
         preferences: [],
+        dietType: "balanced", // Add this line
     })
     const [generatedMeals, setGeneratedMeals] = useState([])
     const [isGenerating, setIsGenerating] = useState(false)
     const [editingMeal, setEditingMeal] = useState(null)
     const [showEditForm, setShowEditForm] = useState(false)
+
+    // Fix for the user goals not showing up properly
+    useEffect(() => {
+        const currentStepNum = currentStep
+        setStepLoading((prev) => ({ ...prev, [currentStepNum]: true }))
+
+        async function fetchData() {
+            if (!user) {
+                toast.error("Please log in to generate a meal plan.")
+                onClose()
+                return
+            }
+
+            // Load user preferences and goals from the store
+            if (currentStep === 1) {
+                if (userGoals && Object.keys(userGoals).length > 0) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        goal: userGoals.goal || "weight-loss",
+                        activityLevel: userGoals.activityLevel || "moderate",
+                    }))
+                } else {
+                    try {
+                        const response = await fetch("/api/fitness-goals", {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        })
+
+                        const data = await response.json()
+                        console.log("User Goals Response:", data)
+
+                        if (data && data.data.fitnessGoals) {
+                            console.log("User Goals Data:", data.fitnessGoals)
+
+                            // Update the state
+                            setUserGoals(data.data.fitnessGoals)
+
+                            // Calculate goal based on target weight
+                            let goal
+                            if (data.data.fitnessGoals.target_weight < 0.5) {
+                                goal = "weight-loss"
+                            } else if (data.data.fitnessGoals.target_weight > 0.5) {
+                                goal = "muscle-gain"
+                            } else {
+                                goal = "maintenance"
+                            }
+
+                            // Use the data directly rather than relying on the state that hasn't updated yet
+                            setFormData((prev) => ({
+                                ...prev,
+                                goal: goal || "weight-loss",
+                                activityLevel: data.data.fitnessGoals.activity_level || "moderate",
+                            }))
+                        } else {
+                            console.error("No fitness goals data found in response")
+                        }
+                    } catch (error) {
+                        console.error("Error fetching fitness goals:", error)
+                    }
+                }
+            }
+
+            if (currentStep === 2) {
+                if (userPreferences && Object.keys(userPreferences).length > 0) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        dietaryRestrictions: userPreferences.restrictions || [],
+                        preferences: [...(userPreferences.allergies || []), ...(userPreferences.disliked_foods || [])],
+                        mealsPerDay: Object.values(userPreferences.meal_frequency || {}).filter(Boolean).length || 4,
+                        dietType: userPreferences.diet_type || "balanced",
+                    }))
+                    console.log(Object.values(userPreferences.meal_frequency).filter(Boolean).length);
+
+                    console.log(formData);
+
+                } else {
+                    try {
+                        setLoading(true)
+                        const response = await fetch("/api/dietary-preference", {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        })
+
+                        const { data } = await response.json()
+                        console.log("Dietary preferences data:", data)
+                        setUserPreferences(data)
+
+                        setFormData((prev) => ({
+                            ...prev,
+                            dietaryRestrictions: data.restrictions || [],
+                            preferences: [...(data.allergies || []), ...(data.disliked_foods || [])],
+                            mealsPerDay: Object.values(data.meal_frequency || {}).filter(Boolean).length,
+                            dietType: data.diet_type || "balanced",
+                        }))
+                        console.log(formData);
+                        console.log(data);
+
+                        console.log(Object.values(data.meal_frequency).filter(Boolean).length);
+
+
+
+                    } catch (error) {
+                        console.error("Error fetching dietary preferences:", error)
+                        toast.error("Failed to load dietary preferences")
+                    } finally {
+                        setLoading(false)
+                    }
+                }
+            }
+
+            setStepLoading((prev) => ({ ...prev, [currentStepNum]: false }))
+        }
+
+        fetchData()
+    }, [currentStep])
+
+    // Separate effect to log state after it updates
+    useEffect(() => {
+        if (userGoals) {
+            console.log("Updated user goals:", userGoals)
+        }
+    }, [userGoals])
+
+    useEffect(() => {
+        if (userPreferences) {
+            console.log("Updated user preferences:", userPreferences)
+        }
+    }, [userPreferences])
 
     const handleInputChange = (field, value) => {
         setFormData({
@@ -74,6 +218,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
             const prompt = `Generate a meal plan for a person with the following preferences:
             Goal: ${formData.goal}
             Activity Level: ${formData.activityLevel}
+            Diet Type: ${formData.dietType}
             Dietary Restrictions: ${formData.dietaryRestrictions.join(", ")}
             Meals Per Day: ${formData.mealsPerDay}
             Calories: ${formData.calorieTarget} kcal
@@ -97,7 +242,6 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                     endTime: getDefaultEndTimeForMealType(meal.type),
                 }))
                 setGeneratedMeals(processedMeals)
-
             } catch (error) {
                 console.error("Failed to parse AI response:", error)
                 // Fallback to sample data if parsing fails
@@ -238,6 +382,15 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         onClose()
     }
 
+    // if (stepLoading[currentStep]) {
+    //     return (
+    //         <div>
+    //             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+    //             <p className="text-muted-foreground">Loading...</p>
+    //         </div>
+    //     )
+    // }
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[600px]">
@@ -262,358 +415,328 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         ))}
                     </div>
 
-                    {currentStep === 1 && (
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-medium">What's your goal?</h3>
-
-                            <RadioGroup
-                                value={formData.goal}
-                                onValueChange={(value) => handleInputChange("goal", value)}
-                                className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                            >
-                                <div>
-                                    <RadioGroupItem value="weight-loss" id="weight-loss" className="peer sr-only" />
-                                    <Label
-                                        htmlFor="weight-loss"
-                                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "weight-loss" ? "border-primary" : "border-muted/20"}`}
-                                    >
-                                        <Scale className="mb-3 h-6 w-6" />
-                                        <span className="font-medium">Weight Loss</span>
-                                    </Label>
-                                </div>
-
-                                <div>
-                                    <RadioGroupItem value="maintenance" id="maintenance" className="peer sr-only" />
-                                    <Label
-                                        htmlFor="maintenance"
-                                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "maintenance" ? "border-primary" : "border-muted/20"}`}
-                                    >
-                                        <Activity className="mb-3 h-6 w-6" />
-                                        <span className="font-medium">Maintenance</span>
-                                    </Label>
-                                </div>
-
-                                <div>
-                                    <RadioGroupItem value="muscle-gain" id="muscle-gain" className="peer sr-only" />
-                                    <Label
-                                        htmlFor="muscle-gain"
-                                        className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "muscle-gain" ? "border-primary" : "border-muted/20"}`}
-                                    >
-                                        <Activity className="mb-3 h-6 w-6" />
-                                        <span className="font-medium">Muscle Gain</span>
-                                    </Label>
-                                </div>
-                            </RadioGroup>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="activity-level">Activity Level</Label>
-                                <RadioGroup
-                                    id="activity-level"
-                                    value={formData.activityLevel}
-                                    onValueChange={(value) => handleInputChange("activityLevel", value)}
-                                    className="grid grid-cols-1 gap-2"
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="sedentary" id="sedentary" />
-                                        <Label htmlFor="sedentary">Sedentary (little or no exercise)</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="light" id="light" />
-                                        <Label htmlFor="light">Light (exercise 1-3 days/week)</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="moderate" id="moderate" />
-                                        <Label htmlFor="moderate">Moderate (exercise 3-5 days/week)</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="active" id="active" />
-                                        <Label htmlFor="active">Active (exercise 6-7 days/week)</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="very-active" id="very-active" />
-                                        <Label htmlFor="very-active">Very Active (intense exercise daily)</Label>
-                                    </div>
-                                </RadioGroup>
-                            </div>
+                    {stepLoading[currentStep] ? (
+                        <div className="flex flex-col items-center justify-center py-10">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                            <p className="text-muted-foreground">Loading...</p>
                         </div>
-                    )}
+                    ) : (
+                        <>
+                            {currentStep === 1 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-medium">What's your goal?</h3>
 
-                    {currentStep === 2 && (
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-medium">Dietary Restrictions</h3>
+                                    <RadioGroup
+                                        value={formData.goal}
+                                        onValueChange={(value) => handleInputChange("goal", value)}
+                                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                    >
+                                        <div>
+                                            <RadioGroupItem value="weight-loss" id="weight-loss" className="peer sr-only" />
+                                            <Label
+                                                htmlFor="weight-loss"
+                                                className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "weight-loss" ? "border-primary" : "border-muted/20"}`}
+                                            >
+                                                <Scale className="mb-3 h-6 w-6" />
+                                                <span className="font-medium">Weight Loss</span>
+                                            </Label>
+                                        </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                {[
-                                    { id: "vegetarian", label: "Vegetarian" },
-                                    { id: "vegan", label: "Vegan" },
-                                    { id: "gluten-free", label: "Gluten-Free" },
-                                    { id: "dairy-free", label: "Dairy-Free" },
-                                    { id: "nut-free", label: "Nut-Free" },
-                                    { id: "keto", label: "Keto" },
-                                    { id: "paleo", label: "Paleo" },
-                                    { id: "low-carb", label: "Low-Carb" },
-                                ].map((restriction) => (
-                                    <div key={restriction.id} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={restriction.id}
-                                            checked={formData.dietaryRestrictions.includes(restriction.id)}
-                                            onCheckedChange={() => toggleDietaryRestriction(restriction.id)}
-                                        />
-                                        <Label htmlFor={restriction.id}>{restriction.label}</Label>
-                                    </div>
-                                ))}
-                            </div>
+                                        <div>
+                                            <RadioGroupItem value="maintenance" id="maintenance" className="peer sr-only" />
+                                            <Label
+                                                htmlFor="maintenance"
+                                                className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "maintenance" ? "border-primary" : "border-muted/20"}`}
+                                            >
+                                                <Activity className="mb-3 h-6 w-6" />
+                                                <span className="font-medium">Maintenance</span>
+                                            </Label>
+                                        </div>
 
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-medium">Meal Frequency</h3>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <Label htmlFor="meals-per-day">Meals per day: {formData.mealsPerDay}</Label>
-                                    </div>
-                                    <Slider
-                                        id="meals-per-day"
-                                        min={3}
-                                        max={6}
-                                        step={1}
-                                        value={[formData.mealsPerDay]}
-                                        onValueChange={(value) => handleInputChange("mealsPerDay", value[0])}
-                                    />
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>3</span>
-                                        <span>4</span>
-                                        <span>5</span>
-                                        <span>6</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {currentStep === 3 && (
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-medium">Macronutrient Distribution</h3>
-
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <Label htmlFor="calorie-target">Daily Calorie Target: {formData.calorieTarget}</Label>
-                                    </div>
-                                    <Slider
-                                        id="calorie-target"
-                                        min={1200}
-                                        max={3500}
-                                        step={50}
-                                        value={[formData.calorieTarget]}
-                                        onValueChange={(value) => handleInputChange("calorieTarget", value[0])}
-                                    />
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>1200</span>
-                                        <span>2000</span>
-                                        <span>2800</span>
-                                        <span>3500</span>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="protein-percentage">Protein: {formData.proteinPercentage}%</Label>
-                                        <Slider
-                                            id="protein-percentage"
-                                            min={10}
-                                            max={50}
-                                            step={5}
-                                            value={[formData.proteinPercentage]}
-                                            onValueChange={(value) => handleInputChange("proteinPercentage", value[0])}
-                                        />
-                                    </div>
+                                        <div>
+                                            <RadioGroupItem value="muscle-gain" id="muscle-gain" className="peer sr-only" />
+                                            <Label
+                                                htmlFor="muscle-gain"
+                                                className={`flex flex-col items-center justify-between rounded-md border-2 p-4 data-[state=checked]:border-primary ${formData.goal === "muscle-gain" ? "border-primary" : "border-muted/20"}`}
+                                            >
+                                                <Activity className="mb-3 h-6 w-6" />
+                                                <span className="font-medium">Muscle Gain</span>
+                                            </Label>
+                                        </div>
+                                    </RadioGroup>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="carbs-percentage">Carbs: {formData.carbsPercentage}%</Label>
-                                        <Slider
-                                            id="carbs-percentage"
-                                            min={10}
-                                            max={70}
-                                            step={5}
-                                            value={[formData.carbsPercentage]}
-                                            onValueChange={(value) => handleInputChange("carbsPercentage", value[0])}
-                                        />
+                                        <Label htmlFor="activity-level">Activity Level</Label>
+                                        <RadioGroup
+                                            id="activity-level"
+                                            value={formData.activityLevel}
+                                            onValueChange={(value) => handleInputChange("activityLevel", value)}
+                                            className="grid grid-cols-1 gap-2"
+                                        >
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="sedentary" id="sedentary" />
+                                                <Label htmlFor="sedentary">Sedentary (little or no exercise)</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="light" id="light" />
+                                                <Label htmlFor="light">Light (exercise 1-3 days/week)</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="moderate" id="moderate" />
+                                                <Label htmlFor="moderate">Moderate (exercise 3-5 days/week)</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="active" id="active" />
+                                                <Label htmlFor="active">Active (exercise 6-7 days/week)</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="very-active" id="very-active" />
+                                                <Label htmlFor="very-active">Very Active (intense exercise daily)</Label>
+                                            </div>
+                                        </RadioGroup>
                                     </div>
+                                </div>
+                            )}
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="fat-percentage">Fat: {formData.fatPercentage}%</Label>
-                                        <Slider
-                                            id="fat-percentage"
-                                            min={10}
-                                            max={60}
-                                            step={5}
-                                            value={[formData.fatPercentage]}
-                                            onValueChange={(value) => handleInputChange("fatPercentage", value[0])}
-                                        />
-                                    </div>
+                            {currentStep === 2 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-medium">Diet Type</h3>
 
-                                    <div
-                                        className={`text-sm ${formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage !== 100
-                                            ? "text-destructive"
-                                            : "text-muted-foreground"
-                                            }`}
+                                    <RadioGroup
+                                        value={formData.dietType}
+                                        onValueChange={(value) => handleInputChange("dietType", value)}
+                                        className="grid grid-cols-1 gap-2 mb-6"
                                     >
-                                        Total: {formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage}%
-                                        {formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage !== 100 &&
-                                            " (should equal 100%)"}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="balanced" id="balanced" />
+                                            <Label htmlFor="balanced">Balanced</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="low-carb" id="low-carb-diet" />
+                                            <Label htmlFor="low-carb-diet">Low Carb</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="high-protein" id="high-protein-diet" />
+                                            <Label htmlFor="high-protein-diet">High Protein</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="keto" id="keto-diet" />
+                                            <Label htmlFor="keto-diet">Keto</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="mediterranean" id="mediterranean-diet" />
+                                            <Label htmlFor="mediterranean-diet">Mediterranean</Label>
+                                        </div>
+                                    </RadioGroup>
 
-                    {currentStep === 4 && (
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-medium">Food Preferences</h3>
+                                    <h3 className="text-lg font-medium">Dietary Restrictions</h3>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                {[
-                                    { id: "high-protein", label: "High Protein Foods" },
-                                    { id: "low-sugar", label: "Low Sugar" },
-                                    { id: "whole-foods", label: "Whole Foods" },
-                                    { id: "meal-prep-friendly", label: "Meal Prep Friendly" },
-                                    { id: "budget-friendly", label: "Budget Friendly" },
-                                    { id: "quick-meals", label: "Quick Meals (<15 min)" },
-                                    { id: "mediterranean", label: "Mediterranean Style" },
-                                    { id: "asian-inspired", label: "Asian Inspired" },
-                                ].map((preference) => (
-                                    <div key={preference.id} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={preference.id}
-                                            checked={formData.preferences.includes(preference.id)}
-                                            onCheckedChange={() => togglePreference(preference.id)}
-                                        />
-                                        <Label htmlFor={preference.id}>{preference.label}</Label>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="p-4 border rounded-md bg-muted/20">
-                                <h4 className="font-medium mb-2">Your Plan Summary</h4>
-                                <ul className="space-y-1 text-sm">
-                                    <li>
-                                        <span className="font-medium">Goal:</span> {formData.goal.replace("-", " ")}
-                                    </li>
-                                    <li>
-                                        <span className="font-medium">Activity Level:</span> {formData.activityLevel}
-                                    </li>
-                                    <li>
-                                        <span className="font-medium">Meals Per Day:</span> {formData.mealsPerDay}
-                                    </li>
-                                    <li>
-                                        <span className="font-medium">Calories:</span> {formData.calorieTarget} kcal
-                                    </li>
-                                    <li>
-                                        <span className="font-medium">Macros:</span> {formData.proteinPercentage}% protein,{" "}
-                                        {formData.carbsPercentage}% carbs, {formData.fatPercentage}% fat
-                                    </li>
-                                    {formData.dietaryRestrictions.length > 0 && (
-                                        <li>
-                                            <span className="font-medium">Restrictions:</span> {formData.dietaryRestrictions.join(", ")}
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
-                        </div>
-                    )}
-
-                    {currentStep === 5 && (
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-medium">Your Generated Meal Plan</h3>
-
-                            {isGenerating ? (
-                                <div className="flex flex-col items-center justify-center py-10">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                                    <p className="text-muted-foreground">Generating your personalized meal plan...</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex justify-end mb-4">
-                                        <Button variant="outline" onClick={handleAddMeal} size="sm">
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Add Meal
-                                        </Button>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[
+                                            { id: "vegetarian", label: "Vegetarian" },
+                                            { id: "vegan", label: "Vegan" },
+                                            { id: "gluten-free", label: "Gluten-Free" },
+                                            { id: "dairy-free", label: "Dairy-Free" },
+                                            { id: "nut-free", label: "Nut-Free" },
+                                            { id: "keto", label: "Keto" },
+                                            { id: "paleo", label: "Paleo" },
+                                            { id: "low-carb", label: "Low-Carb" },
+                                        ].map((restriction) => (
+                                            <div key={restriction.id} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={restriction.id}
+                                                    checked={formData.dietaryRestrictions.includes(restriction.id)}
+                                                    onCheckedChange={() => toggleDietaryRestriction(restriction.id)}
+                                                />
+                                                <Label htmlFor={restriction.id}>{restriction.label}</Label>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    <div className="max-h-[400px] overflow-y-auto pr-2">
-                                        <div className="grid grid-cols-1 gap-4">
-                                            {generatedMeals.map((meal) => (
-                                                <Card key={meal.id} className="relative">
-                                                    <CardHeader className="pb-2">
-                                                        <div className="flex justify-between items-start">
-                                                            <div>
-                                                                <div className="text-sm font-medium text-muted-foreground uppercase">{meal.type}</div>
-                                                                <CardTitle className="text-base mt-1">{meal.title}</CardTitle>
-                                                            </div>
-                                                            <Button variant="ghost" size="sm" onClick={() => handleEditMeal(meal)}>
-                                                                <Edit className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </CardHeader>
-                                                    <CardContent className="pb-2">
-                                                        <div className="flex items-center text-sm text-muted-foreground mb-2">
-                                                            <Clock className="mr-1 h-3 w-3" />
-                                                            <span>
-                                                                {meal.startTime} - {meal.endTime}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-2 gap-2 mb-3">
-                                                            <div className="rounded-md p-2 text-center">
-                                                                <div className="text-xs text-muted-foreground">Calories</div>
-                                                                <div className="font-bold">{meal.calories}</div>
-                                                            </div>
-                                                            <div className="rounded-md border- p-2 text-center">
-                                                                <div className="text-xs text-muted-foreground">Macros</div>
-                                                                <div className="text-xs font-medium">
-                                                                    P: {meal.protein}g | C: {meal.carbs}g | F: {meal.fat}g
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {meal.notes && (
-                                                            <div>
-                                                                <div className="text-xs font-medium mb-1">Ingredients & Notes:</div>
-                                                                <p className="text-sm text-muted-foreground">{meal.notes}</p>
-                                                            </div>
-                                                        )}
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-medium">Meal Frequency</h3>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <Label htmlFor="meals-per-day">Meals per day: {formData.mealsPerDay}</Label>
+                                            </div>
+                                            <Slider
+                                                id="meals-per-day"
+                                                min={3}
+                                                max={6}
+                                                step={1}
+                                                value={[formData.mealsPerDay]}
+                                                onValueChange={(value) => handleInputChange("mealsPerDay", value[0])}
+                                            />
+                                            <div className="flex justify-between text-xs text-muted-foreground">
+                                                <span>3</span>
+                                                <span>4</span>
+                                                <span>5</span>
+                                                <span>6</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </>
+                                </div>
                             )}
-                        </div>
+
+                            {currentStep === 3 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-medium">Macronutrient Distribution</h3>
+
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <Label htmlFor="calorie-target">Daily Calorie Target: {formData.calorieTarget}</Label>
+                                            </div>
+                                            <Slider
+                                                id="calorie-target"
+                                                min={1200}
+                                                max={3500}
+                                                step={50}
+                                                value={[formData.calorieTarget]}
+                                                onValueChange={(value) => handleInputChange("calorieTarget", value[0])}
+                                            />
+                                            <div className="flex justify-between text-xs text-muted-foreground">
+                                                <span>1200</span>
+                                                <span>2000</span>
+                                                <span>2800</span>
+                                                <span>3500</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="protein-percentage">Protein: {formData.proteinPercentage}%</Label>
+                                                <Slider
+                                                    id="protein-percentage"
+                                                    min={10}
+                                                    max={50}
+                                                    step={5}
+                                                    value={[formData.proteinPercentage]}
+                                                    onValueChange={(value) => handleInputChange("proteinPercentage", value[0])}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="carbs-percentage">Carbs: {formData.carbsPercentage}%</Label>
+                                                <Slider
+                                                    id="carbs-percentage"
+                                                    min={10}
+                                                    max={70}
+                                                    step={5}
+                                                    value={[formData.carbsPercentage]}
+                                                    onValueChange={(value) => handleInputChange("carbsPercentage", value[0])}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fat-percentage">Fat: {formData.fatPercentage}%</Label>
+                                                <Slider
+                                                    id="fat-percentage"
+                                                    min={10}
+                                                    max={60}
+                                                    step={5}
+                                                    value={[formData.fatPercentage]}
+                                                    onValueChange={(value) => handleInputChange("fatPercentage", value[0])}
+                                                />
+                                            </div>
+
+                                            <div
+                                                className={`text-sm ${formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage !== 100
+                                                        ? "text-destructive"
+                                                        : "text-muted-foreground"
+                                                    }`}
+                                            >
+                                                Total: {formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage}%
+                                                {formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage !== 100 &&
+                                                    " (should equal 100%)"}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentStep === 4 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-medium">Food Preferences</h3>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[
+                                            { id: "high-protein", label: "High Protein Foods" },
+                                            { id: "low-sugar", label: "Low Sugar" },
+                                            { id: "whole-foods", label: "Whole Foods" },
+                                            { id: "meal-prep-friendly", label: "Meal Prep Friendly" },
+                                            { id: "budget-friendly", label: "Budget Friendly" },
+                                            { id: "quick-meals", label: "Quick Meals (<15 min)" },
+                                            { id: "mediterranean", label: "Mediterranean Style" },
+                                            { id: "asian-inspired", label: "Asian Inspired" },
+                                        ].map((preference) => (
+                                            <div key={preference.id} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={preference.id}
+                                                    checked={formData.preferences.includes(preference.id)}
+                                                    onCheckedChange={() => togglePreference(preference.id)}
+                                                />
+                                                <Label htmlFor={preference.id}>{preference.label}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="p-4 border rounded-md bg-muted/20">
+                                        <h4 className="font-medium mb-2">Your Plan Summary</h4>
+                                        <ul className="space-y-1 text-sm">
+                                            <li>
+                                                <span className="font-medium">Goal:</span> {formData.goal.replace("-", " ")}
+                                            </li>
+                                            <li>
+                                                <span className="font-medium">Activity Level:</span> {formData.activityLevel}
+                                            </li>
+                                            <li>
+                                                <span className="font-medium">Diet Type:</span> {formData.dietType}
+                                            </li>
+                                            <li>
+                                                <span className="font-medium">Meals Per Day:</span> {formData.mealsPerDay}
+                                            </li>
+                                            <li>
+                                                <span className="font-medium">Calories:</span> {formData.calorieTarget} kcal
+                                            </li>
+                                            <li>
+                                                <span className="font-medium">Macros:</span> {formData.proteinPercentage}% protein,{" "}
+                                                {formData.carbsPercentage}% carbs, {formData.fatPercentage}% fat
+                                            </li>
+                                            {formData.dietaryRestrictions.length > 0 && (
+                                                <li>
+                                                    <span className="font-medium">Restrictions:</span> {formData.dietaryRestrictions.join(", ")}
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
-
-                <DialogFooter className="flex justify-between mt-6">
-                    {currentStep > 1 && (
-                        <Button variant="secondary" onClick={prevStep}>
-                            Back
-                        </Button>
-                    )}
-                    <div className="flex-1"></div>
-                    {currentStep < 4 ? (
-                        <Button onClick={nextStep}>
-                            Continue <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    ) : currentStep === 4 ? (
-                        <Button onClick={generatePlan} disabled={isGenerating}>
-                            Generate Plan
-                        </Button>
-                    ) : (
-                        <Button onClick={handleSavePlan}>
-                            <Save className="mr-2 h-4 w-4" />
-                            Save Plan
-                        </Button>
-                    )}
-                </DialogFooter>
+                    <DialogFooter className="flex justify-between mt-6">
+                        {currentStep > 1 && (
+                            <Button variant="secondary" onClick={prevStep}>
+                                Back
+                            </Button>
+                        )}
+                        <div className="flex-1"></div>
+                        {currentStep < 4 ? (
+                            <Button onClick={nextStep}>
+                                Continue <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        ) : currentStep === 4 ? (
+                            <Button onClick={generatePlan} disabled={isGenerating}>
+                                Generate Plan
+                            </Button>
+                        ) : (
+                            <Button onClick={handleSavePlan}>
+                                <Save className="mr-2 h-4 w-4" />
+                                Save Plan
+                            </Button>
+                        )}
+                    </DialogFooter>
             </DialogContent>
         </Dialog>
     )
