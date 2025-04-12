@@ -19,21 +19,14 @@ import {
 } from "@/components/ui/sidebar"
 import HamburgerMenu from "@/components/HamburgerMenu"
 import { useAppStore } from "@/store"
-import { Badge } from "@/components/ui/badge"
+// import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { supabase } from "@/supabase.config.mjs"
 
-// Sample dynamic data (replace with API data)
+
 const defaultUserData = {
-  user: {
-    name: "Sarah Wilson",
-    plan: "AI Weight Loss Plan",
-    progress: 68,
-    avatar: "/placeholder.svg?height=40&width=40",
-    streak: 12,
-  },
   weekDays: [
-    { day: "Monday", isActive: true },
+    { day: "Monday", isActive: false },
     { day: "Tuesday", isActive: false },
     { day: "Wednesday", isActive: false },
     { day: "Thursday", isActive: false },
@@ -46,17 +39,7 @@ const defaultUserData = {
     { name: "Lunch", time: "1:00 PM", completed: true },
     { name: "Snack", time: "4:00 PM", completed: false },
     { name: "Dinner", time: "7:00 PM", completed: false },
-  ],
-  stats: {
-    calories: {
-      consumed: 1490,
-      goal: 2000,
-    },
-    water: {
-      consumed: 5,
-      goal: 8,
-    },
-  },
+  ]
 }
 
 export function AppSidebar({ userData = defaultUserData }) {
@@ -157,7 +140,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                           <Link href={`/dashboard/meals/${meal.name.toLowerCase()}`}>
                             <Utensils className="h-4 w-4" />
                             <span>{meal.name}</span>
-                            <span className="ml-auto flex items-center text-xs">
+                            {/* <span className="ml-auto flex items-center text-xs">
                               {meal.completed ? (
                                 <Badge variant="outline" className="bg-[#147870] text-white py-1">
                                   Completed
@@ -165,7 +148,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                               ) : (
                                 <span className="text-muted-foreground">{meal.time}</span>
                               )}
-                            </span>
+                            </span> */}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
