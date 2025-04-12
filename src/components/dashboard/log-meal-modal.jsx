@@ -5,15 +5,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent } from "@/components/ui/card"
 import Button from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Check, Clock, Calendar, Utensils, X, CheckCircle, AlertCircle } from 'lucide-react'
+import { Check, Clock, Calendar, Utensils, X, CheckCircle } from 'lucide-react'
 import { Textarea } from "@/components/ui/TextArea"
 import { toast } from "sonner"
 import { format } from "date-fns"
+import { useAppStore } from "@/store"
 
 export default function LogMealModal({ isOpen, onClose, meal }) {
     const [isLogging, setIsLogging] = useState(false)
     const [portionSize, setPortionSize] = useState(100)
     const [notes, setNotes] = useState("")
+    const { userMeals, setUserMeals } = useAppStore()
 
     // Check if meal is already logged
     const isLogged = Boolean(meal?.logged_at)
@@ -33,7 +35,7 @@ export default function LogMealModal({ isOpen, onClose, meal }) {
 
             // Create the meal log object
             const mealLog = {
-                id: meal?.id,
+                meal_id: meal?.id,
                 title: meal?.title || meal?.name,
                 type: meal?.type,
                 date: new Date().toISOString().split("T")[0],
@@ -62,6 +64,33 @@ export default function LogMealModal({ isOpen, onClose, meal }) {
             }
 
             toast.success("Meal logged successfully!")
+
+            // Ensure userMeals is an array before updating
+            if (Array.isArray(userMeals)) {
+                // Update the meal in the local state with the logged_at timestamp
+                setUserMeals(
+                    userMeals.map((m) =>
+                        m.id === meal.id
+                            ? { ...m, logged_at: new Date().toISOString(), portion_size: portionSize, notes: notes }
+                            : m
+                    )
+                )
+            } else {
+                console.error("userMeals is not an array:", userMeals)
+                // If userMeals is not an array, fetch meals again to reset the state
+                try {
+                    const response = await fetch("/api/meals")
+                    if (response.ok) {
+                        const { data } = await response.json()
+                        if (Array.isArray(data)) {
+                            setUserMeals(data)
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching meals after log:", error)
+                }
+            }
+
             onClose()
         } catch (error) {
             console.error("Error logging meal:", error)
@@ -103,10 +132,11 @@ export default function LogMealModal({ isOpen, onClose, meal }) {
                                             <Clock className="h-3 w-3 mr-1" />
                                             <span>
                                                 {meal.time ||
-                                                    (meal.starttime && meal.endtime ?
-                                                        `${meal.starttime} - ${meal.endtime}` :
-                                                        (meal.startTime && meal.endTime ?
-                                                            `${meal.startTime} - ${meal.endTime}` : ""))}
+                                                    (meal.starttime && meal.endtime
+                                                        ? `${meal.starttime} - ${meal.endtime}`
+                                                        : meal.startTime && meal.endTime
+                                                            ? `${meal.startTime} - ${meal.endTime}`
+                                                            : "")}
                                             </span>
                                         </div>
                                     </div>

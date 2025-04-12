@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import Button from "@/components/ui/button"
-import { Check, Clock, Edit, CheckCircle } from 'lucide-react'
+import { Check, Clock, CheckCircle } from 'lucide-react'
 import LogMealModal from "./log-meal-modal"
 import { useState } from "react"
 import { format } from "date-fns"
@@ -17,12 +17,12 @@ export default function MealCard({ meal }) {
   return (
     <>
       <Card className={`overflow-hidden ${isLogged ? "border-primary/30" : ""}`}>
-        {isLogged && (
+        {/* {isLogged && (
           <div className="bg-primary/10 text-primary text-xs py-1 px-3 flex items-center justify-center">
             <CheckCircle className="h-3 w-3 mr-1" />
             Logged at {loggedTime}
           </div>
-        )}
+        )} */}
         <CardHeader className="p-3 pb-0">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
@@ -55,7 +55,7 @@ export default function MealCard({ meal }) {
           {isLogged ? (
             <Button variant="outline" size="sm" className="h-8 text-xs text-primary" disabled>
               <CheckCircle className="h-3 w-3 mr-1" />
-              Logged
+              Logged at {loggedTime}
             </Button>
           ) : (
             <Button size="sm" className="h-8 text-xs" onClick={() => setIsLogModalOpen(true)}>

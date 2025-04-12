@@ -35,36 +35,57 @@ export async function POST(request) {
 
         // Extract data from request
         const { mealLog } = await request.json()
-        console.log("mealLog", mealLog);
-        
-        if (!mealLog) {
+        console.log("mealLog", mealLog)
+
+        if (!mealLog || !mealLog.meal_id) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: "Meal log data is required",
+                    message: "Meal log data and meal_id are required",
                 },
                 { status: 400 },
             )
         }
 
-        // Add user ID to the meal log
-        const mealLogWithUser = {
-            ...mealLog,
-            user_id: session.user.id,
+        // Prepare update data
+        const updateData = {
             logged_at: new Date().toISOString(),
+            // Include portion size and any adjustments to nutritional values
+            portion_size: mealLog.portion_size || 100,
+            // If portion size is different from 100%, adjust the nutritional values
+            calories: mealLog.calories,
+            protein: mealLog.protein,
+            carbs: mealLog.carbs,
+            fat: mealLog.fat,
+            notes: mealLog.notes || null,
         }
 
-        // Insert meal log into database
-        const { data: loggedMeal, error: logError } = await supabase.from("meal_logs").insert(mealLogWithUser).select()
-        console.log("loggedMeal", loggedMeal);
-        if (logError && logError.code !== 'PGRST116') {
-            console.error("Error logging meal:", logError)
+        // Update the existing meal in the meals table
+        const { data: updatedMeal, error: updateError } = await supabase
+            .from("meals")
+            .update(updateData)
+            .eq("id", mealLog.meal_id)
+            .eq("user_id", session.user.id)
+            .select()
+
+        if (updateError) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: "Failed to log meal",
+                    message: "Failed to update meal",
+                    error: updateError.message,
                 },
                 { status: 500 },
+            )
+        }
+
+        if (!updatedMeal || updatedMeal.length === 0) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Meal not found or you don't have permission to update it",
+                },
+                { status: 404 },
             )
         }
 
@@ -72,7 +93,7 @@ export async function POST(request) {
             {
                 success: true,
                 message: "Meal logged successfully",
-                data: loggedMeal || [],
+                data: updatedMeal,
             },
             { status: 200 },
         )
