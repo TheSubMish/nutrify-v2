@@ -60,20 +60,154 @@ export default function Dashboard() {
 
   const todayMeals = useMemo(() => {
     if (!userMeals || userMeals.length === 0) {
-      return [];
+      return []
     }
-  
+
     // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split("T")[0]; // "2025-04-12"
-    console.log("Today's date for comparison:", today);
-  
+    const today = new Date().toISOString().split("T")[0] // "2025-04-12"
+    console.log("Today's date for comparison:", today)
+
     return userMeals.filter((meal) => {
       // Extract just the date part from the meal date
-      const mealDate = meal.date.split("T")[0]; // This will get "2025-04-12" from "2025-04-12T00:00:00"
-      console.log(`Comparing meal "${meal.title}": ${mealDate} with today: ${today}`);
-      return mealDate === today;
-    });
-  }, [userMeals]);
+      const mealDate = meal.date.split("T")[0] // This will get "2025-04-12" from "2025-04-12T00:00:00"
+      console.log(`Comparing meal "${meal.title}": ${mealDate} with today: ${today}`)
+      return mealDate === today
+    })
+  }, [userMeals])
+
+  // Calculate nutrition totals from today's meals
+  // Goals include ALL meals for the day (logged or not)
+  const nutritionGoals = useMemo(() => {
+    if (!todayMeals || todayMeals.length === 0) {
+      return {
+        totalCalories: 0,
+        totalProtein: 0,
+        totalCarbs: 0,
+        totalFat: 0,
+        breakfastCalories: 0,
+        lunchCalories: 0,
+        dinnerCalories: 0,
+        snackCalories: 0,
+      }
+    }
+
+    // Initialize totals
+    let totalCalories = 0
+    let totalProtein = 0
+    let totalCarbs = 0
+    let totalFat = 0
+    let breakfastCalories = 0
+    let lunchCalories = 0
+    let dinnerCalories = 0
+    let snackCalories = 0
+
+    // Sum up all values for ALL meals (this is the goal)
+    todayMeals.forEach((meal) => {
+      // Add to total macros
+      totalCalories += meal.calories || 0
+      totalProtein += meal.protein || 0
+      totalCarbs += meal.carbs || 0
+      totalFat += meal.fat || 0
+
+      // Add to meal type calories
+      switch (meal.type.toLowerCase()) {
+        case "breakfast":
+          breakfastCalories += meal.calories || 0
+          break
+        case "lunch":
+          lunchCalories += meal.calories || 0
+          break
+        case "dinner":
+          dinnerCalories += meal.calories || 0
+          break
+        case "snack":
+          snackCalories += meal.calories || 0
+          break
+        default:
+          break
+      }
+    })
+
+    return {
+      totalCalories,
+      totalProtein,
+      totalCarbs,
+      totalFat,
+      breakfastCalories,
+      lunchCalories,
+      dinnerCalories,
+      snackCalories,
+    }
+  }, [todayMeals])
+
+  // Calculate consumed nutrition from LOGGED meals only
+  const consumedNutrition = useMemo(() => {
+    if (!todayMeals || todayMeals.length === 0) {
+      return {
+        totalCalories: 0,
+        totalProtein: 0,
+        totalCarbs: 0,
+        totalFat: 0,
+        breakfastCalories: 0,
+        lunchCalories: 0,
+        dinnerCalories: 0,
+        snackCalories: 0,
+      }
+    }
+
+    // Initialize totals
+    let totalCalories = 0
+    let totalProtein = 0
+    let totalCarbs = 0
+    let totalFat = 0
+    let breakfastCalories = 0
+    let lunchCalories = 0
+    let dinnerCalories = 0
+    let snackCalories = 0
+
+    // Filter for logged meals only and sum up their values
+    const loggedMeals = todayMeals.filter((meal) => Boolean(meal.logged_at))
+
+    loggedMeals.forEach((meal) => {
+      // Add to total macros
+      totalCalories += meal.calories || 0
+      totalProtein += meal.protein || 0
+      totalCarbs += meal.carbs || 0
+      totalFat += meal.fat || 0
+
+      // Add to meal type calories
+      switch (meal.type.toLowerCase()) {
+        case "breakfast":
+          breakfastCalories += meal.calories || 0
+          break
+        case "lunch":
+          lunchCalories += meal.calories || 0
+          break
+        case "dinner":
+          dinnerCalories += meal.calories || 0
+          break
+        case "snack":
+          snackCalories += meal.calories || 0
+          break
+        default:
+          break
+      }
+    })
+
+    return {
+      totalCalories,
+      totalProtein,
+      totalCarbs,
+      totalFat,
+      breakfastCalories,
+      lunchCalories,
+      dinnerCalories,
+      snackCalories,
+    }
+  }, [todayMeals])
+
+  // Calculate remaining calories
+  const remainingCalories = Math.max(0, nutritionGoals.totalCalories - consumedNutrition.totalCalories)
 
   // Early return for loading state
   if (loading) {
@@ -123,15 +257,22 @@ export default function Dashboard() {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <CalorieTracker
-                consumed={1490}
-                goal={2000}
-                remaining={510}
-                breakfast={320}
-                lunch={450}
-                snack={200}
-                dinner={520}
+                consumed={consumedNutrition.totalCalories}
+                goal={nutritionGoals.totalCalories}
+                remaining={remainingCalories}
+                breakfast={consumedNutrition.breakfastCalories}
+                lunch={consumedNutrition.lunchCalories}
+                snack={consumedNutrition.snackCalories}
+                dinner={consumedNutrition.dinnerCalories}
               />
-              <NutritionChart protein={102} carbs={120} fat={55} proteinGoal={120} carbsGoal={150} fatGoal={65} />
+              <NutritionChart
+                protein={consumedNutrition.totalProtein}
+                carbs={consumedNutrition.totalCarbs}
+                fat={consumedNutrition.totalFat}
+                proteinGoal={nutritionGoals.totalProtein}
+                carbsGoal={nutritionGoals.totalCarbs}
+                fatGoal={nutritionGoals.totalFat}
+              />
               <WaterIntake initialConsumed={5} goal={8} />
               {/* <AirQualityIndex /> */}
             </div>
@@ -139,10 +280,16 @@ export default function Dashboard() {
             <div className="mt-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Today's Meals</h2>
-                <Button variant="outline" size="sm" onClick={() => setIsModalOpen(true)}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Meal
-                </Button>
+                <div className="flex gap-2">
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium">{consumedNutrition.totalCalories}</span> /{" "}
+                    {nutritionGoals.totalCalories} kcal consumed
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setIsModalOpen(true)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Meal
+                  </Button>
+                </div>
               </div>
 
               {todayMeals.length > 0 ? (
