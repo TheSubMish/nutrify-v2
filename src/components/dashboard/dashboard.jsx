@@ -19,14 +19,6 @@ export default function Dashboard() {
   const { user, userMeals, setUserMeals } = useAppStore()
   const [loading, setLoading] = useState(true)
 
-  // This conditional check should be inside the component body, not at the top level
-  // It should also return early to prevent the rest of the component from executing
-  if (!user) {
-    // This will cause an infinite loop if placed here!
-    // toast.error("Please log in to view your dashboard.")
-    // return null
-  }
-
   useEffect(() => {
     // Check for user here instead
     if (!user) {
@@ -68,19 +60,20 @@ export default function Dashboard() {
 
   const todayMeals = useMemo(() => {
     if (!userMeals || userMeals.length === 0) {
-      return []
+      return [];
     }
-
-    // Get today's date in YYYY-MM-DD format dynamically
-    const today = new Date().toISOString().split("T")[0]
-    console.log("Today's date for comparison:", today)
-
+  
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split("T")[0]; // "2025-04-12"
+    console.log("Today's date for comparison:", today);
+  
     return userMeals.filter((meal) => {
-      const mealDate = new Date(meal.date).toISOString().split("T")[0]
-      console.log(`Comparing meal "${meal.title}": ${mealDate} with today: ${today}`)
-      return mealDate === today
-    })
-  }, [userMeals])
+      // Extract just the date part from the meal date
+      const mealDate = meal.date.split("T")[0]; // This will get "2025-04-12" from "2025-04-12T00:00:00"
+      console.log(`Comparing meal "${meal.title}": ${mealDate} with today: ${today}`);
+      return mealDate === today;
+    });
+  }, [userMeals]);
 
   // Early return for loading state
   if (loading) {
