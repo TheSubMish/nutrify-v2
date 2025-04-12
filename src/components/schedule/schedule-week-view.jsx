@@ -41,7 +41,7 @@ export default function ScheduleWeekView({
       if (eventStartTime === timeSlot) return true
 
       // If this is the last time slot, include any remaining events
-      if (!nextSlotTime) return currentSlotIndex === timeSlots.length - 1
+      if (!nextSlotTime) return eventStartTime === timeSlot
 
       // Find the closest time slot
       if (eventStartTime) {
