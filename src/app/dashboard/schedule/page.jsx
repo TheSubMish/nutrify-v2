@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks } from "date-fns"
+import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, parseISO } from "date-fns"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import Button from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,39 +11,64 @@ import ScheduleDayView from "@/components/schedule/schedule-day-view"
 import AddMealModal from "@/components/schedule/add-meal-modal"
 import { useAppStore } from "@/store"
 import { toast } from "sonner"
+import { useSearchParams, useRouter } from "next/navigation"
 
 export default function SchedulePage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [view, setView] = useState("week")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // Get filter parameters from URL
+  const dateParam = searchParams.get("date")
+  const viewParam = searchParams.get("view")
+  const typeParam = searchParams.get("type")
+
+  const [currentDate, setCurrentDate] = useState(dateParam ? parseISO(dateParam) : new Date())
+  const [view, setView] = useState(viewParam || "week")
   const [showAddMealModal, setShowAddMealModal] = useState(false)
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null)
   const [mealEvents, setMealEvents] = useState([])
   const [mealToEdit, setMealToEdit] = useState(null)
-  const [mealTypeFilter, setMealTypeFilter] = useState("all")
+  const [mealTypeFilter, setMealTypeFilter] = useState(typeParam || "all")
   const { user } = useAppStore()
 
+  // Update URL when filters change
   useEffect(() => {
+    const params = new URLSearchParams()
+    params.set("date", format(currentDate, "yyyy-MM-dd"))
+    params.set("view", view)
+    if (mealTypeFilter !== "all") {
+      params.set("type", mealTypeFilter)
+    }
 
+    // Update URL without refreshing the page
+    router.push(`?${params.toString()}`, { scroll: false })
+  }, [currentDate, view, mealTypeFilter, router])
+
+  useEffect(() => {
     if (!user) {
       console.error("User ID is not available.")
       return
     }
 
     const fetchMeals = async () => {
-      const response = await fetch("/api/meals")
-      const data = await response.json()
+      try {
+        const response = await fetch("/api/meals")
+        const data = await response.json()
 
-      if (data.success) {
-        setMealEvents(data.data)
-        console.log("Fetched meals:", data.data);
-        
-      } else {
-        toast.error("Failed to get meals")
-        console.error("Failed to fetch meals:", data.message)
+        if (data.success) {
+          setMealEvents(data.data)
+          console.log("Fetched meals:", data.data)
+        } else {
+          toast.error("Failed to get meals")
+          console.error("Failed to fetch meals:", data.message)
+        }
+      } catch (error) {
+        toast.error("Error fetching meals")
+        console.error("Error fetching meals:", error)
       }
     }
     fetchMeals()
-  }, [])
+  }, [user])
 
   const handlePrevious = () => {
     if (view === "week") {
@@ -88,86 +113,99 @@ export default function SchedulePage() {
   }
 
   const handleDeleteMeal = async (meal) => {
-    const userId = user?.id;
-  
+    const userId = user?.id
+
     try {
-      const response = await fetch('/api/meals', {
-        method: 'DELETE',
+      const response = await fetch("/api/meals", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: meal.id, userId })
-      });
-  
-      const result = await response.json();
-  
+        body: JSON.stringify({ id: meal.id, userId }),
+      })
+
+      const result = await response.json()
+
       if (result.success) {
-        setMealEvents((prev) => prev.filter((event) => event.id !== meal.id));
-        toast.success("Meal deleted successfully");
+        setMealEvents((prev) => prev.filter((event) => event.id !== meal.id))
+        toast.success("Meal deleted successfully")
       } else {
-        toast.error("Failed to delete meal");
-        console.error("Failed to delete meal:", result.message);
+        toast.error("Failed to delete meal")
+        console.error("Failed to delete meal:", result.message)
       }
     } catch (err) {
-      toast.error("Failed to delete meal");
-      console.error("Error deleting meal:", err);
+      toast.error("Failed to delete meal")
+      console.error("Error deleting meal:", err)
     }
-  };
-  
+  }
 
   const handleSaveMeal = async (mealData) => {
-    const userId = user?.id;
-    const endpoint = '/api/meals';
+    const userId = user?.id
+    const endpoint = "/api/meals"
     const headers = {
-      'Content-Type': 'application/json'
-    };
-  
+      "Content-Type": "application/json",
+    }
+
     try {
       const response = await fetch(endpoint, {
-        method: mealData.id ? 'PUT' : 'POST',
+        method: mealData.id ? "PUT" : "POST",
         headers,
         body: JSON.stringify({ userId, meal: mealData }),
-      });
-  
-      const result = await response.json();
-  
+      })
+
+      const result = await response.json()
+
       if (!result.success) {
-        toast.error("Failed to save meal");
-        console.error(result.message);
-        return;
-      }
-  
-      const updatedMeal = result.data[0];
-  
-      if (mealData.id) {
-        setMealEvents((prev) =>
-          prev.map((event) => (event.id === updatedMeal.id ? updatedMeal : event))
-        );
-      } else {
-        setMealEvents((prev) => [...prev, updatedMeal]);
+        toast.error("Failed to save meal")
+        console.error(result.message)
+        return
       }
 
-      toast.success("Meal saved successfully");
-  
-      setShowAddMealModal(false);
-      setMealToEdit(null);
+      const updatedMeal = result.data[0]
+
+      if (mealData.id) {
+        setMealEvents((prev) => prev.map((event) => (event.id === updatedMeal.id ? updatedMeal : event)))
+      } else {
+        setMealEvents((prev) => [...prev, updatedMeal])
+      }
+
+      toast.success("Meal saved successfully")
+
+      setShowAddMealModal(false)
+      setMealToEdit(null)
     } catch (err) {
-      console.error("Failed to save meal:", err);
+      console.error("Failed to save meal:", err)
     }
-  };
-  
+  }
 
   const handleFilterChange = (value) => {
     setMealTypeFilter(value)
+  }
+
+  const handleViewChange = (newView) => {
+    setView(newView)
   }
 
   // Filter meals based on selected meal type
   const filteredMealEvents =
     mealTypeFilter === "all" ? mealEvents : mealEvents.filter((event) => event.type === mealTypeFilter)
 
-  // Get the date range for the header
+  // Filter meals based on date range
   const startDate = view === "week" ? startOfWeek(currentDate, { weekStartsOn: 0 }) : currentDate
   const endDate = view === "week" ? endOfWeek(currentDate, { weekStartsOn: 0 }) : currentDate
+
+  // Further filter meals to only show those within the current date range
+  const dateFilteredMeals = filteredMealEvents.filter((meal) => {
+    const mealDate = new Date(meal.date)
+
+    // For week view, check if meal is within the week
+    if (view === "week") {
+      return mealDate >= startDate && mealDate <= endDate
+    }
+
+    // For day view, check if meal is on the current day
+    return format(mealDate, "yyyy-MM-dd") === format(currentDate, "yyyy-MM-dd")
+  })
 
   const dateRangeText =
     view === "week"
@@ -204,7 +242,7 @@ export default function SchedulePage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Tabs value={view} onValueChange={setView} className="w-[200px]">
+            <Tabs value={view} onValueChange={handleViewChange} className="w-[200px]">
               <TabsList className="grid w-full grid-cols-2 gap-x-2">
                 <TabsTrigger value="day" className={`border-primary border-2 ${view === "day" ? "primary-bg" : ""}`}>
                   Day
@@ -235,7 +273,7 @@ export default function SchedulePage() {
             <TabsContent value="week" className="mt-0">
               <ScheduleWeekView
                 currentDate={currentDate}
-                mealEvents={filteredMealEvents}
+                mealEvents={dateFilteredMeals}
                 onAddMeal={handleAddMeal}
                 onEditMeal={handleEditMeal}
                 onDuplicateMeal={handleDuplicateMeal}
@@ -245,7 +283,7 @@ export default function SchedulePage() {
             <TabsContent value="day" className="mt-0">
               <ScheduleDayView
                 currentDate={currentDate}
-                mealEvents={filteredMealEvents}
+                mealEvents={dateFilteredMeals}
                 onAddMeal={handleAddMeal}
                 onEditMeal={handleEditMeal}
                 onDuplicateMeal={handleDuplicateMeal}

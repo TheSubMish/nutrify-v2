@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Calendar, ChevronDown, ChevronRight, Home, MessageSquare, LogOut, User2, Utensils } from "lucide-react"
+import { usePathname, useSearchParams } from "next/navigation"
+import { format } from "date-fns"
 
 import {
   Sidebar,
@@ -23,7 +25,6 @@ import { useAppStore } from "@/store"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { supabase } from "@/supabase.config.mjs"
 
-
 const defaultUserData = {
   weekDays: [
     { day: "Monday", isActive: false },
@@ -39,7 +40,7 @@ const defaultUserData = {
     { name: "Lunch", time: "1:00 PM", completed: true },
     { name: "Snack", time: "4:00 PM", completed: false },
     { name: "Dinner", time: "7:00 PM", completed: false },
-  ]
+  ],
 }
 
 export function AppSidebar({ userData = defaultUserData }) {
@@ -47,6 +48,34 @@ export function AppSidebar({ userData = defaultUserData }) {
   const [isOpen, setIsOpen] = useState(false)
   const [hidden, setHidden] = useState(false)
   const { logout } = useAppStore()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Get current date in YYYY-MM-DD format for links
+  const today = format(new Date(), "yyyy-MM-dd")
+
+  // Check if we're on the schedule page
+  const isSchedulePage = pathname === "/dashboard/schedule"
+
+  // Get current filter values from URL if we're on the schedule page
+  const currentView = isSchedulePage ? searchParams.get("view") || "week" : "week"
+  const currentDate = isSchedulePage ? searchParams.get("date") || today : today
+
+  // Determine which day of the week is active based on the current date
+  useEffect(() => {
+    if (isSchedulePage && currentDate) {
+      const dayOfWeek = format(new Date(currentDate), "EEEE")
+
+      // Update the weekDays array to mark the current day as active
+      const updatedWeekDays = userData.weekDays.map((day) => ({
+        ...day,
+        isActive: day.day === dayOfWeek,
+      }))
+
+      // We can't directly modify userData since it's a prop, but in a real app
+      // you would update this in your state management system
+    }
+  }, [isSchedulePage, currentDate, userData.weekDays])
 
   const toggleMenu = () => setIsOpen((prev) => !prev)
   const closeMenu = () => setIsOpen(false)
@@ -56,6 +85,24 @@ export function AppSidebar({ userData = defaultUserData }) {
     logout()
     // Redirect to login page after logout
     window.location.href = "/auth/login"
+  }
+
+  // Helper function to build schedule page URLs with the correct parameters
+  const buildScheduleUrl = (params = {}) => {
+    const urlParams = new URLSearchParams()
+
+    // Add date parameter (default to today if not provided)
+    urlParams.set("date", params.date || currentDate)
+
+    // Add view parameter (default to current view or week)
+    urlParams.set("view", params.view || currentView)
+
+    // Add type parameter if provided
+    if (params.type) {
+      urlParams.set("type", params.type)
+    }
+
+    return `/dashboard/schedule?${urlParams.toString()}`
   }
 
   return (
@@ -102,7 +149,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                 <SidebarGroupContent>
                   <SidebarMenu>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild isActive={true} onClick={closeMenu}>
+                      <SidebarMenuButton asChild isActive={pathname === "/dashboard"} onClick={closeMenu}>
                         <Link href="/dashboard">
                           <Home className="h-4 w-4" />
                           <span>Dashboard</span>
@@ -110,7 +157,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild onClick={closeMenu}>
+                      <SidebarMenuButton asChild isActive={pathname === "/dashboard/chat"} onClick={closeMenu}>
                         <Link href="/dashboard/chat">
                           <MessageSquare className="h-4 w-4" />
                           <span>Nutrition Coach</span>
@@ -118,7 +165,7 @@ export function AppSidebar({ userData = defaultUserData }) {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild onClick={closeMenu}>
+                      <SidebarMenuButton asChild isActive={pathname === "/dashboard/profile"} onClick={closeMenu}>
                         <Link href="/dashboard/profile">
                           <User2 className="h-4 w-4" />
                           <span>My Profile</span>
@@ -136,8 +183,18 @@ export function AppSidebar({ userData = defaultUserData }) {
                   <SidebarMenu>
                     {userData.mealTypes.map((meal) => (
                       <SidebarMenuItem key={meal.name}>
-                        <SidebarMenuButton asChild onClick={closeMenu}>
-                          <Link href={`/dashboard/meals/${meal.name.toLowerCase()}`}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isSchedulePage && searchParams.get("type") === meal.name.toLowerCase()}
+                          onClick={closeMenu}
+                        >
+                          <Link
+                            href={buildScheduleUrl({
+                              type: meal.name.toLowerCase(),
+                              date: today, // Always use today's date for meal types
+                              view: "day", // Use day view for meal types
+                            })}
+                          >
                             <Utensils className="h-4 w-4" />
                             <span>{meal.name}</span>
                             {/* <span className="ml-auto flex items-center text-xs">
@@ -171,17 +228,46 @@ export function AppSidebar({ userData = defaultUserData }) {
                   <CollapsibleContent>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        {userData.weekDays.map((day) => (
-                          <SidebarMenuItem key={day.day}>
-                            <SidebarMenuButton asChild isActive={day.isActive} onClick={closeMenu}>
-                              <Link href={`/dashboard/schedule?${day.day.toLowerCase()}`}>
-                                <Calendar className="h-4 w-4" />
-                                <span>{day.day}</span>
-                                {day.isActive && <ChevronRight className="ml-auto h-4 w-4" />}
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        ))}
+                        {userData.weekDays.map((day) => {
+                          // Calculate the date for this day of the week
+                          const today = new Date()
+                          const dayIndex = [
+                            "Sunday",
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                          ].indexOf(day.day)
+                          const currentDayIndex = today.getDay() // 0 = Sunday, 1 = Monday, etc.
+                          const daysToAdd = (dayIndex - currentDayIndex + 7) % 7
+
+                          const dayDate = new Date(today)
+                          dayDate.setDate(today.getDate() + daysToAdd)
+                          const formattedDate = format(dayDate, "yyyy-MM-dd")
+
+                          return (
+                            <SidebarMenuItem key={day.day}>
+                              <SidebarMenuButton
+                                asChild
+                                isActive={isSchedulePage && format(new Date(currentDate), "EEEE") === day.day}
+                                onClick={closeMenu}
+                              >
+                                <Link
+                                  href={buildScheduleUrl({
+                                    date: formattedDate,
+                                    view: "day", // Use day view for specific days
+                                  })}
+                                >
+                                  <Calendar className="h-4 w-4" />
+                                  <span>{day.day}</span>
+                                  {day.isActive && <ChevronRight className="ml-auto h-4 w-4" />}
+                                </Link>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          )
+                        })}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </CollapsibleContent>
