@@ -8,15 +8,15 @@ import { Slider } from "@/components/ui/slider"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup"
 import Label from "@/components/ui/Label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { callAi } from "@/utils/callAi"
 import extractJson from "@/utils/extractJson"
 import { useAppStore } from "@/store"
 import { toast } from "sonner"
 
 export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
-    const { user, userPreferences, setUserPreferences, userGoals, setUserGoals } = useAppStore()
-    const [loading, setLoading] = useState(true)
+    const { user, userPreferences, setUserPreferences, userGoals, setUserGoals, setUserMeals } = useAppStore()
+    const [loading, setLoading] = useState(false)
     const [currentStep, setCurrentStep] = useState(1)
     const [stepLoading, setStepLoading] = useState({
         1: false,
@@ -35,7 +35,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         carbsPercentage: 40,
         fatPercentage: 30,
         preferences: [],
-        dietType: "balanced", // Add this line
+        dietType: "balanced",
     })
     const [generatedMeals, setGeneratedMeals] = useState([])
     const [isGenerating, setIsGenerating] = useState(false)
@@ -43,8 +43,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
     const [showEditForm, setShowEditForm] = useState(false)
 
     const calculateMacros = async () => {
-        setStepLoading(prev => ({ ...prev, 3: true }));
-        console.log("Calculating macros based on user data...");
+        setStepLoading((prev) => ({ ...prev, 3: true }))
 
         try {
             // Create a prompt based on the user's data
@@ -57,44 +56,42 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         Based on these factors, provide the recommended macronutrient distribution as a JSON object with these properties:
         protein (percentage), carbs (percentage), fat (percentage), calorieTarget (daily calorie target).
         
-        The percentages should add up to 100%. The calorie target should be appropriate for the person's goal and activity level.`;
+        The percentages should add up to 100%. The calorie target should be appropriate for the person's goal and activity level. Recommend food based on Nepalese cuisine and local ingredients.`
 
-            const response = await callAi(prompt);
+            const response = await callAi(prompt)
 
             // Try to parse the response as JSON
             try {
-                const macroData = JSON.parse(extractJson(response));
-                console.log("AI calculated macros:", macroData);
+                const macroData = JSON.parse(extractJson(response))
 
                 // Update the form data with the calculated values
-                setFormData(prev => ({
+                setFormData((prev) => ({
                     ...prev,
                     proteinPercentage: macroData.protein || prev.proteinPercentage,
                     carbsPercentage: macroData.carbs || prev.carbsPercentage,
                     fatPercentage: macroData.fat || prev.fatPercentage,
-                    calorieTarget: macroData.calorieTarget || prev.calorieTarget
-                }));
+                    calorieTarget: macroData.calorieTarget || prev.calorieTarget,
+                }))
 
                 // Force a re-render to ensure the UI updates
                 setTimeout(() => {
-                    setStepLoading(prev => ({ ...prev, 3: false }));
-                }, 500);
+                    setStepLoading((prev) => ({ ...prev, 3: false }))
+                }, 500)
             } catch (error) {
-                console.error("Failed to parse AI response for macros:", error);
-                toast.error("Failed to calculate optimal macros. Using default values.");
-                setStepLoading(prev => ({ ...prev, 3: false }));
+                toast.error("Failed to calculate optimal macros. Using default values.")
+                setStepLoading((prev) => ({ ...prev, 3: false }))
             }
         } catch (error) {
-            console.error("Error calculating macros:", error);
-            toast.error("Failed to calculate optimal macros. Using default values.");
-            setStepLoading(prev => ({ ...prev, 3: false }));
+            toast.error("Failed to calculate optimal macros. Using default values.")
+            setStepLoading((prev) => ({ ...prev, 3: false }))
         }
-    };
+    }
 
     // Fix for the user goals not showing up properly
     useEffect(() => {
         const currentStepNum = currentStep
         setStepLoading((prev) => ({ ...prev, [currentStepNum]: true }))
+        setLoading(true)
 
         async function fetchData() {
             if (!user) {
@@ -121,10 +118,8 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         })
 
                         const data = await response.json()
-                        console.log("User Goals Response:", data)
 
                         if (data && data.data.fitnessGoals) {
-                            console.log("User Goals Data:", data.fitnessGoals)
 
                             // Update the state
                             setUserGoals(data.data.fitnessGoals)
@@ -146,17 +141,16 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                                 activityLevel: data.data.fitnessGoals.activity_level || "moderate",
                             }))
                         } else {
-                            console.error("No fitness goals data found in response")
+                            toast.error("Failed to load fitness goals")
                         }
                     } catch (error) {
-                        console.error("Error fetching fitness goals:", error)
+                        toast.error("Failed to load fitness goals")
                     }
                 }
             }
 
             if (currentStep === 2) {
                 if (userPreferences && Object.keys(userPreferences).length > 0) {
-
                     setFormData((prev) => ({
                         ...prev,
                         dietaryRestrictions: userPreferences.restrictions || [],
@@ -164,10 +158,8 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         mealsPerDay: Object.values(userPreferences.meal_frequency || {}).filter(Boolean).length || 4,
                         dietType: userPreferences.diet_type || "balanced",
                     }))
-
                 } else {
                     try {
-                        setLoading(true)
                         const response = await fetch("/api/dietary-preference", {
                             method: "GET",
                             headers: {
@@ -188,39 +180,23 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                                 dietType: data.diet_type || "balanced",
                             }))
                         }
-
                     } catch (error) {
-                        console.error("Error fetching dietary preferences:", error)
                         toast.error("Failed to load dietary preferences")
-                    } finally {
-                        setLoading(false)
                     }
                 }
             }
 
             if (currentStep === 3) {
-                console.log("Calculating macros based on user data...")
+                setStepLoading((prev) => ({ ...prev, [currentStepNum]: true }))
                 calculateMacros()
             }
 
             setStepLoading((prev) => ({ ...prev, [currentStepNum]: false }))
+            setLoading(false)
         }
 
         fetchData()
     }, [currentStep])
-
-    // Separate effect to log state after it updates
-    useEffect(() => {
-        if (userGoals) {
-            console.log("Updated user goals:", userGoals)
-        }
-    }, [userGoals])
-
-    useEffect(() => {
-        if (userPreferences) {
-            console.log("Updated user preferences:", userPreferences)
-        }
-    }, [userPreferences])
 
     const handleInputChange = (field, value) => {
         setFormData({
@@ -254,14 +230,15 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
     }
 
     const nextStep = () => {
-        const newStep = Math.min(currentStep + 1, 4);
-        setCurrentStep(newStep);
+        const newStep = Math.min(currentStep + 1, 5)
+        setCurrentStep(newStep)
 
         // If moving to step 3, calculate macros after changing the step
         if (newStep === 3 && currentStep === 2) {
-            calculateMacros();
+            calculateMacros()
         }
-    };
+    }
+
     const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1))
 
     const generatePlan = async () => {
@@ -282,7 +259,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
             Food Preferences: ${formData.preferences.join(", ")}
             
             Format the response as a JSON array with ${formData.mealsPerDay} meals, each with these properties:
-            title (string), type (breakfast, lunch, dinner, or snack), calories (number), protein (number), carbs (number), fat (number), notes (string with ingredients and preparation).`
+            title (string), type (breakfast, lunch, dinner, or snack), calories (number), protein (number), carbs (number), fat (number), notes (string with ingredients and preparation). Recommend the meals based on Nepalese cuisine and local ingredients.`
 
             const response = await callAi(prompt)
 
@@ -290,21 +267,24 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
             try {
                 const mealData = JSON.parse(extractJson(response))
 
+                // Get today's date in ISO format (YYYY-MM-DD)
+                const today = new Date().toISOString().split("T")[0]
+
                 const processedMeals = mealData.map((meal, index) => ({
                     ...meal,
                     id: Date.now() + index,
-                    date: new Date(),
-                    startTime: getDefaultTimeForMealType(meal.type),
-                    endTime: getDefaultEndTimeForMealType(meal.type),
+                    date: today,
+                    starttime: getDefaultTimeForMealType(meal.type),
+                    endtime: getDefaultEndTimeForMealType(meal.type),
                 }))
-                setGeneratedMeals(processedMeals)
+                setGeneratedMeals(processedMeals)                
+                setUserMeals(processedMeals)
+
             } catch (error) {
-                console.error("Failed to parse AI response:", error)
                 // Fallback to sample data if parsing fails
                 setGeneratedMeals(getSampleMeals(formData.mealsPerDay))
             }
         } catch (error) {
-            console.error("Error generating meal plan:", error)
             setGeneratedMeals(getSampleMeals(formData.mealsPerDay))
         } finally {
             setIsGenerating(false)
@@ -343,14 +323,17 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
     }
 
     const getSampleMeals = (count) => {
+        // Get today's date in ISO format (YYYY-MM-DD)
+        const today = new Date().toISOString().split("T")[0]
+
         const sampleMeals = [
             {
                 id: Date.now(),
                 title: "Oatmeal with Berries",
                 type: "breakfast",
-                date: new Date(),
-                startTime: "08:00",
-                endTime: "08:30",
+                date: today,
+                starttime: "08:00",
+                endtime: "08:30",
                 calories: 350,
                 protein: 15,
                 carbs: 45,
@@ -361,9 +344,9 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                 id: Date.now() + 1,
                 title: "Grilled Chicken Salad",
                 type: "lunch",
-                date: new Date(),
-                startTime: "12:30",
-                endTime: "13:00",
+                date: today,
+                starttime: "12:30",
+                endtime: "13:00",
                 calories: 450,
                 protein: 35,
                 carbs: 25,
@@ -375,9 +358,9 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                 id: Date.now() + 2,
                 title: "Protein Smoothie",
                 type: "snack",
-                date: new Date(),
-                startTime: "15:30",
-                endTime: "15:45",
+                date: today,
+                starttime: "15:30",
+                endtime: "15:45",
                 calories: 200,
                 protein: 20,
                 carbs: 15,
@@ -388,9 +371,9 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                 id: Date.now() + 3,
                 title: "Salmon with Roasted Vegetables",
                 type: "dinner",
-                date: new Date(),
-                startTime: "18:30",
-                endTime: "19:00",
+                date: today,
+                starttime: "18:30",
+                endtime: "19:00",
                 calories: 550,
                 protein: 40,
                 carbs: 30,
@@ -408,20 +391,21 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         setShowEditForm(true)
     }
 
-    // const handleSaveMeal = (updatedMeal) => {
-    //     setGeneratedMeals(generatedMeals.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)))
-    //     setShowEditForm(false)
-    //     setEditingMeal(null)
-    // }
+    const handleSaveMeal = (updatedMeal) => {
+        setGeneratedMeals(generatedMeals.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)))
+        setShowEditForm(false)
+        setEditingMeal(null)
+    }
 
     const handleAddMeal = () => {
+        const today = new Date().toISOString().split("T")[0]
         const newMeal = {
             id: Date.now(),
             title: "",
             type: "snack",
-            date: new Date(),
-            startTime: "15:00",
-            endTime: "15:15",
+            date: today,
+            starttime: "15:00",
+            endtime: "15:15",
             calories: 0,
             protein: 0,
             carbs: 0,
@@ -432,20 +416,40 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         setShowEditForm(true)
     }
 
-    const handleSavePlan = () => {
-        // Here you would implement saving to your database
-        alert("Meal plan saved successfully!")
-        onClose()
-    }
+    const handleSavePlan = async () => {
+        try {
+            if (!user || !user.id) {
+                toast.error("You must be logged in to save a meal plan")
+                return
+            }
 
-    // if (stepLoading[currentStep]) {
-    //     return (
-    //         <div>
-    //             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-    //             <p className="text-muted-foreground">Loading...</p>
-    //         </div>
-    //     )
-    // }
+            const response = await fetch("/api/save-meals", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    meals: generatedMeals,
+                }),
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                toast.success("Meal plan saved successfully!")
+                onClose()
+                if (typeof onGeneratePlan === "function") {
+                    onGeneratePlan(generatedMeals)
+                }
+            } else {
+                toast.error(data.message || "Failed to save meal plan")
+            }
+        } catch (error) {
+            // console.error("Error saving meal plan:", error)
+            toast.error("Failed to save meal plan")
+        }
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -456,14 +460,14 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
 
                 <div className="mt-4">
                     <div className="flex justify-between mb-6">
-                        {[1, 2, 3, 4].map((step) => (
+                        {[1, 2, 3, 4, 5].map((step) => (
                             <div
                                 key={step}
                                 className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep === step
-                                    ? "tertiary-bg text-primary-foreground"
-                                    : currentStep > step
-                                        ? "tertiary-bg text-primary"
-                                        : "bg-muted/20 text-muted-foreground"
+                                        ? "tertiary-bg text-primary-foreground"
+                                        : currentStep > step
+                                            ? "tertiary-bg text-primary"
+                                            : "bg-muted/20 text-muted-foreground"
                                     }`}
                             >
                                 {currentStep > step ? <Check className="h-5 w-5" stroke="#ffffff" /> : step}
@@ -471,7 +475,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                         ))}
                     </div>
 
-                    {stepLoading[currentStep] ? (
+                    {loading || stepLoading[currentStep] ? (
                         <div className="flex flex-col items-center justify-center py-10">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
                             <p className="text-muted-foreground">Loading...</p>
@@ -698,8 +702,8 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
 
                                             <div
                                                 className={`text-sm ${formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage !== 100
-                                                    ? "text-destructive"
-                                                    : "text-muted-foreground"
+                                                        ? "text-destructive"
+                                                        : "text-muted-foreground"
                                                     }`}
                                             >
                                                 Total: {formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage}%
@@ -768,11 +772,225 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                                     </div>
                                 </div>
                             )}
+
+                            {currentStep === 5 && (
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-medium">Your Meal Plan</h3>
+                                        <Button variant="outline" size="sm" onClick={handleAddMeal}>
+                                            <Plus className="h-4 w-4 mr-1" /> Add Meal
+                                        </Button>
+                                    </div>
+
+                                    {isGenerating ? (
+                                        <div className="flex flex-col items-center justify-center py-10">
+                                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                                            <p className="text-muted-foreground">Generating your meal plan...</p>
+                                        </div>
+                                    ) : generatedMeals.length === 0 ? (
+                                        <div className="text-center py-10">
+                                            <p className="text-muted-foreground">No meals generated yet.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                                            {generatedMeals.map((meal) => (
+                                                <Card key={meal.id} className="overflow-hidden">
+                                                    <CardContent className="p-0">
+                                                        <div className="p-4">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <h4 className="font-medium">{meal.title}</h4>
+                                                                <Button variant="ghost" size="sm" onClick={() => handleEditMeal(meal)}>
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mb-2">
+                                                                <div className="flex items-center">
+                                                                    <Clock className="h-3 w-3 mr-1" />
+                                                                    <span>{meal.type}</span>
+                                                                </div>
+                                                                <div>•</div>
+                                                                <div>
+                                                                    {meal.starttime} - {meal.endtime}
+                                                                </div>
+                                                            </div>
+                                                            <div className="grid grid-cols-4 gap-2 text-sm mb-2">
+                                                                <div>
+                                                                    <span className="font-medium">{meal.calories}</span> kcal
+                                                                </div>
+                                                                <div>
+                                                                    <span className="font-medium">{meal.protein}g</span> protein
+                                                                </div>
+                                                                <div>
+                                                                    <span className="font-medium">{meal.carbs}g</span> carbs
+                                                                </div>
+                                                                <div>
+                                                                    <span className="font-medium">{meal.fat}g</span> fat
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-muted-foreground">{meal.notes}</p>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {showEditForm && editingMeal && (
+                                        <Dialog open={showEditForm} onOpenChange={() => setShowEditForm(false)}>
+                                            <DialogContent className="sm:max-w-[500px]">
+                                                <DialogHeader>
+                                                    <DialogTitle>{editingMeal.id ? "Edit Meal" : "Add Meal"}</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="grid gap-4 py-4">
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="title" className="text-right">
+                                                            Title
+                                                        </Label>
+                                                        <input
+                                                            id="title"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.title}
+                                                            onChange={(e) => setEditingMeal({ ...editingMeal, title: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="type" className="text-right">
+                                                            Type
+                                                        </Label>
+                                                        <select
+                                                            id="type"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.type}
+                                                            onChange={(e) => setEditingMeal({ ...editingMeal, type: e.target.value })}
+                                                        >
+                                                            <option value="breakfast">Breakfast</option>
+                                                            <option value="lunch">Lunch</option>
+                                                            <option value="dinner">Dinner</option>
+                                                            <option value="snack">Snack</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="starttime" className="text-right">
+                                                            Start Time
+                                                        </Label>
+                                                        <input
+                                                            id="starttime"
+                                                            type="time"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.starttime}
+                                                            onChange={(e) => setEditingMeal({ ...editingMeal, starttime: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="endtime" className="text-right">
+                                                            End Time
+                                                        </Label>
+                                                        <input
+                                                            id="endtime"
+                                                            type="time"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.endtime}
+                                                            onChange={(e) => setEditingMeal({ ...editingMeal, endtime: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="calories" className="text-right">
+                                                            Calories
+                                                        </Label>
+                                                        <input
+                                                            id="calories"
+                                                            type="number"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.calories}
+                                                            onChange={(e) =>
+                                                                setEditingMeal({ ...editingMeal, calories: Number.parseInt(e.target.value) || 0 })
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="protein" className="text-right">
+                                                            Protein (g)
+                                                        </Label>
+                                                        <input
+                                                            id="protein"
+                                                            type="number"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.protein}
+                                                            onChange={(e) =>
+                                                                setEditingMeal({ ...editingMeal, protein: Number.parseInt(e.target.value) || 0 })
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="carbs" className="text-right">
+                                                            Carbs (g)
+                                                        </Label>
+                                                        <input
+                                                            id="carbs"
+                                                            type="number"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.carbs}
+                                                            onChange={(e) =>
+                                                                setEditingMeal({ ...editingMeal, carbs: Number.parseInt(e.target.value) || 0 })
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="fat" className="text-right">
+                                                            Fat (g)
+                                                        </Label>
+                                                        <input
+                                                            id="fat"
+                                                            type="number"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            value={editingMeal.fat}
+                                                            onChange={(e) =>
+                                                                setEditingMeal({ ...editingMeal, fat: Number.parseInt(e.target.value) || 0 })
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="notes" className="text-right">
+                                                            Notes
+                                                        </Label>
+                                                        <textarea
+                                                            id="notes"
+                                                            className="col-span-3 p-2 border rounded"
+                                                            rows={3}
+                                                            value={editingMeal.notes}
+                                                            onChange={(e) => setEditingMeal({ ...editingMeal, notes: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button variant="outline" onClick={() => setShowEditForm(false)}>
+                                                        Cancel
+                                                    </Button>
+                                                    <Button
+                                                        onClick={() => {
+                                                            if (editingMeal.id) {
+                                                                handleSaveMeal(editingMeal)
+                                                            } else {
+                                                                const newMeal = { ...editingMeal, id: Date.now() }
+                                                                setGeneratedMeals([...generatedMeals, newMeal])
+                                                                setShowEditForm(false)
+                                                                setEditingMeal(null)
+                                                            }
+                                                        }}
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
                 <DialogFooter className="flex justify-between mt-6">
-                    {currentStep > 1 && (
+                    {currentStep > 1 && currentStep <= 5 && (
                         <Button variant="secondary" onClick={prevStep}>
                             Back
                         </Button>
