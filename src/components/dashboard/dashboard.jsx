@@ -33,7 +33,7 @@ export default function Dashboard() {
       try {
         const response = await fetch("/api/meals")
         if (!response.ok) {
-          throw new Error("Failed to fetch meals")
+          toast.error("Failed to fetch meals")
         }
         const { data } = await response.json()
 

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Calendar, ChevronDown, ChevronRight, Home, MessageSquare, LogOut, User2, Utensils } from "lucide-react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { format } from "date-fns"
+import { useAuth } from "@/contexts/AuthContext"
 
 import {
   Sidebar,
@@ -20,10 +21,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import HamburgerMenu from "@/components/HamburgerMenu"
-import { useAppStore } from "@/store"
 // import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { supabase } from "@/supabase.config.mjs"
 
 const defaultUserData = {
   weekDays: [
@@ -47,7 +46,7 @@ export function AppSidebar({ userData = defaultUserData }) {
   const [weeklyScheduleOpen, setWeeklyScheduleOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [hidden, setHidden] = useState(false)
-  const { logout } = useAppStore()
+  const { signOut } = useAuth() // Use the signOut function from AuthContext
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -81,10 +80,12 @@ export function AppSidebar({ userData = defaultUserData }) {
   const closeMenu = () => setIsOpen(false)
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    logout()
-    // Redirect to login page after logout
-    window.location.href = "/auth/login"
+    try {
+      await signOut()
+      // The redirect is handled in the signOut function
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
   }
 
   // Helper function to build schedule page URLs with the correct parameters
@@ -197,15 +198,6 @@ export function AppSidebar({ userData = defaultUserData }) {
                           >
                             <Utensils className="h-4 w-4" />
                             <span>{meal.name}</span>
-                            {/* <span className="ml-auto flex items-center text-xs">
-                              {meal.completed ? (
-                                <Badge variant="outline" className="bg-[#147870] text-white py-1">
-                                  Completed
-                                </Badge>
-                              ) : (
-                                <span className="text-muted-foreground">{meal.time}</span>
-                              )}
-                            </span> */}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -280,10 +272,10 @@ export function AppSidebar({ userData = defaultUserData }) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <div onClick={handleSignOut}>
+                    <button onClick={handleSignOut} className="flex items-center w-full">
                       <LogOut className="h-4 w-4" />
-                      <span>Sign-Out</span>
-                    </div>
+                      <span>Sign Out</span>
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -295,4 +287,3 @@ export function AppSidebar({ userData = defaultUserData }) {
     </SidebarProvider>
   )
 }
-
