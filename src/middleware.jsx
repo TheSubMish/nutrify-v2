@@ -9,11 +9,6 @@ export async function middleware(req) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Check if the user is authenticated
-  console.log("Session:", session);
-  console.log("Session data:", session?.user);
-  
-
   const isAuthPath = req.nextUrl.pathname.startsWith('/auth');
   const isProtectedPath = ['/dashboard', '/profile', '/settings'].some((p) =>
     req.nextUrl.pathname.startsWith(p)

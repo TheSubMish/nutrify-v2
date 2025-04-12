@@ -11,12 +11,11 @@ export async function fetchConversations(userId) {
       .order("created_at", { ascending: true })
 
     if (error) {
-      throw new Error("Failed to fetch conversations")
+      return { error: "Failed to fetch conversations" }
     }
 
     return { data }
   } catch (error) {
-    console.error("Error fetching conversations:", error)
     return { error: "Failed to fetch conversations" }
   }
 }

@@ -35,7 +35,6 @@ export async function POST(request) {
             .eq('id', id);
             
         if (error) {
-            console.error('Error updating profile:', error);
             return Response.json({ error: error.message }, { status: 400 });
         }
 

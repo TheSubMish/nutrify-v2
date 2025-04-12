@@ -17,8 +17,6 @@ export const getFitnessGoals = async (userMetrics, weightHistory, defaultGoals) 
     // Call the AI API to get fitness goals
     const response = await callAi(prompt);
 
-    console.log("AI Response: ", response);
-
     // Parse the AI response to extract the JSON object
     try {
         // Look for JSON pattern in the response
@@ -40,11 +38,8 @@ export const getFitnessGoals = async (userMetrics, weightHistory, defaultGoals) 
             }
         }
 
-        // If parsing fails or validation fails, return default goals
-        console.error("Failed to parse AI response, using default goals");
         return defaultGoals;
     } catch (error) {
-        console.error("Error parsing AI response:", error);
         return defaultGoals;
     }
 }

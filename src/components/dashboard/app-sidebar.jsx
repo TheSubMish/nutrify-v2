@@ -23,6 +23,7 @@ import {
 import HamburgerMenu from "@/components/HamburgerMenu"
 // import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { toast } from "sonner"
 
 const defaultUserData = {
   weekDays: [
@@ -84,7 +85,7 @@ export function AppSidebar({ userData = defaultUserData }) {
       await signOut()
       // The redirect is handled in the signOut function
     } catch (error) {
-      console.error("Error signing out:", error)
+      toast.error("Failed to sign out")
     }
   }
 

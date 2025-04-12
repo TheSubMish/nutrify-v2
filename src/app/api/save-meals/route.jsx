@@ -36,8 +36,6 @@ export async function POST(request) {
         // Extract data from request
         const { userId, meals } = await request.json()
 
-        console.log("Received meals to save:", meals)
-
         if (!userId) {
             return NextResponse.json(
                 {
@@ -77,7 +75,6 @@ export async function POST(request) {
         const { data: savedMeals, error: insertError } = await supabase.from("meals").insert(mealsToInsert).select()
 
         if (insertError) {
-            console.error("Error saving meals data:", insertError)
             return NextResponse.json(
                 {
                     success: false,
@@ -86,8 +83,6 @@ export async function POST(request) {
                 { status: 500 },
             )
         }
-
-        console.log("Successfully saved meals:", savedMeals)
 
         return NextResponse.json(
             {
@@ -98,7 +93,6 @@ export async function POST(request) {
             { status: 200 },
         )
     } catch (error) {
-        console.error("Error in save-meals API:", error)
         return NextResponse.json(
             {
                 success: false,

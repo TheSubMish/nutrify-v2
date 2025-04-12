@@ -46,7 +46,6 @@ export default function SchedulePage() {
 
   useEffect(() => {
     if (!user) {
-      console.error("User ID is not available.")
       return
     }
 
@@ -57,14 +56,11 @@ export default function SchedulePage() {
 
         if (data.success) {
           setMealEvents(data.data)
-          console.log("Fetched meals:", data.data)
         } else {
           toast.error("Failed to get meals")
-          console.error("Failed to fetch meals:", data.message)
         }
       } catch (error) {
         toast.error("Error fetching meals")
-        console.error("Error fetching meals:", error)
       }
     }
     fetchMeals()
@@ -131,11 +127,9 @@ export default function SchedulePage() {
         toast.success("Meal deleted successfully")
       } else {
         toast.error("Failed to delete meal")
-        console.error("Failed to delete meal:", result.message)
       }
     } catch (err) {
       toast.error("Failed to delete meal")
-      console.error("Error deleting meal:", err)
     }
   }
 
@@ -157,7 +151,6 @@ export default function SchedulePage() {
 
       if (!result.success) {
         toast.error("Failed to save meal")
-        console.error(result.message)
         return
       }
 
@@ -174,7 +167,7 @@ export default function SchedulePage() {
       setShowAddMealModal(false)
       setMealToEdit(null)
     } catch (err) {
-      console.error("Failed to save meal:", err)
+      toast.error("Failed to save meal")
     }
   }
 

@@ -137,7 +137,6 @@ export async function POST(request) {
         })
 
     } catch (error) {
-        console.error('Error updating dietary preferences:', error)
         return NextResponse.json({
             success: false,
             message: error.message || "Failed to update dietary preferences"

@@ -39,18 +39,15 @@ export default function Dashboard() {
 
         // Only update state if component is still mounted
         if (isMounted) {
-          console.log("Fetched meals:", data)
           // Ensure data is an array before setting state
           if (Array.isArray(data)) {
             setUserMeals(data)
           } else {
-            console.error("API returned non-array data:", data)
             setUserMeals([]) // Set to empty array as fallback
           }
           setLoading(false)
         }
       } catch (error) {
-        console.error("Error fetching meals:", error)
         if (isMounted) {
           setUserMeals([]) // Set to empty array on error
           setLoading(false)
@@ -68,22 +65,18 @@ export default function Dashboard() {
   const todayMeals = useMemo(() => {
     // Ensure userMeals is an array before filtering
     if (!Array.isArray(userMeals) || userMeals.length === 0) {
-      console.log("userMeals is not an array or is empty:", userMeals)
       return []
     }
 
     // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split("T")[0] // "2025-04-12"
-    console.log("Today's date for comparison:", today)
+    const today = new Date().toISOString().split("T")[0]
 
     return userMeals.filter((meal) => {
       if (!meal || !meal.date) {
-        console.log("Invalid meal object:", meal)
         return false
       }
       // Extract just the date part from the meal date
       const mealDate = typeof meal.date === "string" ? meal.date.split("T")[0] : ""
-      console.log(`Comparing meal "${meal.title || meal.name}": ${mealDate} with today: ${today}`)
       return mealDate === today
     })
   }, [userMeals])

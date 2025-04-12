@@ -54,7 +54,6 @@ export async function POST(request) {
 
         return response
     } catch (error) {
-        console.error("Error in sign-out API:", error)
         return NextResponse.json(
             {
                 success: false,

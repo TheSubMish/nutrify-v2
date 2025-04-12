@@ -169,7 +169,6 @@ export async function POST(request) {
         }, { status: 200 });
 
     } catch (error) {
-        console.error("Profile update error:", error);
         return Response.json({
             success: false,
             message: error.message || "Failed to update user",

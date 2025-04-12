@@ -76,7 +76,6 @@ export async function POST(request) {
       remainingRequests: MAX_REQUESTS - (requestCache.get(userCacheKey)?.count || 0),
     })
   } catch (error) {
-    console.error("Error processing chat request:", error)
     return NextResponse.json({ error: "Failed to process request" }, { status: 500 })
   }
 }
@@ -91,7 +90,7 @@ async function saveConversation(userId, role, content) {
   ])
 
   if (error) {
-    console.error("Failed to save conversation:", error)
+    return NextResponse.json({ error: "Failed to save conversation" }, { status: 500 })
   }
 }
 

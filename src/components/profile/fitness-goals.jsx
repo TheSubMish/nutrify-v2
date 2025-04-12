@@ -16,8 +16,6 @@ export default function FitnessGoals({ setActiveSave }) {
 
   useEffect(() => {
 
-    console.log(userGoals);
-    
     if (!user) {
       toast.error("Please log in to view your fitness goals.")
       setLoading(true)
@@ -48,14 +46,8 @@ export default function FitnessGoals({ setActiveSave }) {
             activityLevel: "moderate",
           }
 
-          console.log(data.data);
-          
-
           if (data.data) {
             const goalsData = data.data.fitnessGoals
-
-            console.log(goalsData);
-            
 
             setUserGoals({
               targetWeight: goalsData.target_weight ?? defaultGoals.targetWeight,
@@ -78,7 +70,6 @@ export default function FitnessGoals({ setActiveSave }) {
           toast.error("Failed to fetch fitness goals")
         }
       } catch (error) {
-        console.error(error)
         toast.error("An error occurred while fetching fitness goals")
         setLoading(false)
       }

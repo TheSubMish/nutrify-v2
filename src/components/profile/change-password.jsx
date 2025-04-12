@@ -39,7 +39,6 @@ export function ChangePasswordModal({ isOpen, onClose }) {
       }
     } catch (error) {
       toast.error("An error occurred while changing your password");
-      console.error("Password change error:", error);
     } finally {
       setIsLoading(false);
     }

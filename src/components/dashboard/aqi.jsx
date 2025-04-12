@@ -14,9 +14,6 @@ export default function AirQualityIndex() {
 
     const APIKEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
 
-    console.log(APIKEY);
-    
-
     // Function to determine AQI category and color
     const getAqiInfo = (value) => {
         if (value <= 50) {
@@ -44,9 +41,6 @@ export default function AirQualityIndex() {
                 `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${APIKEY || "YOUR_API_KEY"}`,
             )
 
-            console.log(await response.json());
-            
-
             if (!response.ok) {
                 throw new Error("Failed to fetch air quality data")
             }
@@ -67,7 +61,6 @@ export default function AirQualityIndex() {
             }
         } catch (err) {
             setError("Could not fetch air quality data. Please try again later.")
-            console.log(err);
         } finally {
             setLoading(false)
         }
@@ -85,7 +78,6 @@ export default function AirQualityIndex() {
                 (err) => {
                     setError("Could not get your location. Please allow location access.")
                     setLoading(false)
-                    console.log(err)
                 },
             )
         } else {

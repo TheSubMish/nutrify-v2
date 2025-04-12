@@ -30,7 +30,6 @@ export async function saveHealthMetrics(userId, metrics) {
             message: data.message || "Health metrics saved successfully"
         };
     } catch (error) {
-        console.error("Health metrics save error:", error);
         return {
             success: false,
             message: "An error occurred. Please try again."

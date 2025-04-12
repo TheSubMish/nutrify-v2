@@ -163,7 +163,6 @@ export async function PUT(request) {
             .select()
 
         if (updateError) {
-            console.error("Error updating meal:", updateError)
             return NextResponse.json({ success: false, message: "Failed to update meal" }, { status: 500 })
         }
 
@@ -218,7 +217,6 @@ export async function DELETE(request) {
             .eq('user_id', userId);
 
         if (deleteError) {
-            console.error("Error deleting meal:", deleteError);
             return NextResponse.json({ success: false, message: "Failed to delete meal" }, { status: 500 });
         }
 

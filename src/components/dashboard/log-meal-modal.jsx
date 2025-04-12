@@ -76,7 +76,6 @@ export default function LogMealModal({ isOpen, onClose, meal }) {
                     )
                 )
             } else {
-                console.error("userMeals is not an array:", userMeals)
                 // If userMeals is not an array, fetch meals again to reset the state
                 try {
                     const response = await fetch("/api/meals")
@@ -87,13 +86,12 @@ export default function LogMealModal({ isOpen, onClose, meal }) {
                         }
                     }
                 } catch (error) {
-                    console.error("Error fetching meals after log:", error)
+                    toast.error("Failed to fetch meals")
                 }
             }
 
             onClose()
         } catch (error) {
-            console.error("Error logging meal:", error)
             toast.error(error.message || "Failed to log meal")
         } finally {
             setIsLogging(false)

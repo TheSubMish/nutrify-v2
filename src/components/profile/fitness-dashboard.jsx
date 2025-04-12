@@ -20,15 +20,6 @@ export default function FitnessDashboard({ setActiveSave }) {
                 return
             }
 
-            // console.log(weightHistory);
-            
-
-            // Check if userMetrics is available
-            // if ((userGoals && Object.keys(userGoals).length > 0)){
-            //     setLoading(false)
-            //     return
-            // }
-
             try {
                 setLoading(true)
 
@@ -77,7 +68,6 @@ export default function FitnessDashboard({ setActiveSave }) {
                 setWeightHistory([weightHistory] ?? [])
                 setTargetWeight(fitnessGoals?.target_weight ?? 0)
             } catch (err) {
-                console.error(err)
                 toast.error("Something went wrong while loading data.")
             } finally {
                 setLoading(false)

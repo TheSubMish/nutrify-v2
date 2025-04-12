@@ -35,7 +35,6 @@ export async function POST(request) {
 
         // Extract data from request
         const { mealLog } = await request.json()
-        console.log("mealLog", mealLog)
 
         if (!mealLog || !mealLog.meal_id) {
             return NextResponse.json(
@@ -98,7 +97,6 @@ export async function POST(request) {
             { status: 200 },
         )
     } catch (error) {
-        console.error("Error in log-meal API:", error)
         return NextResponse.json(
             {
                 success: false,

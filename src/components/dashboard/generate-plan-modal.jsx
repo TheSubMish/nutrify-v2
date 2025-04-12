@@ -446,7 +446,6 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                 toast.error(data.message || "Failed to save meal plan")
             }
         } catch (error) {
-            // console.error("Error saving meal plan:", error)
             toast.error("Failed to save meal plan")
         }
     }

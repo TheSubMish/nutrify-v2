@@ -37,7 +37,6 @@ export async function sendContactMessage(name, email, message) {
             message: data.message || "Message sent successfully" 
         };
     } catch (error) {
-        console.error("Error sending contact message:", error);
         return { 
             success: false, 
             message: "An error occurred. Please try again." 

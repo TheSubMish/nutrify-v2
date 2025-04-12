@@ -35,7 +35,6 @@ export async function changePassword(userId, currentPassword, newPassword) {
       message: data.message || "Password changed successfully"
     };
   } catch (error) {
-    console.error("Password change error:", error);
     return {
       success: false,
       message: "An error occurred. Please try again."

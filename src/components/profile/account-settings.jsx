@@ -57,8 +57,6 @@ export default function AccountSettings({ setActiveSave }) {
         data_sharing: true,
         activity_tracking: true,
       };
-      console.log(data);
-
 
       if (data) {
         // Assuming data contains user settings
@@ -75,7 +73,6 @@ export default function AccountSettings({ setActiveSave }) {
         // If no settings found, use default settings
         setUserSettings(defaultSettings);
       }
-      console.log((userSettings));
 
       setIsLoading(false);
     }
@@ -85,14 +82,11 @@ export default function AccountSettings({ setActiveSave }) {
   }, [user]);
 
   const handleToggleChange = (field) => {
-    console.log(field);
     
     const currentSetting = userSettings;
-    console.log(currentSetting[field]);
     const newSetting = { ...currentSetting, [field]: !currentSetting[field] };
     setUserSettings(newSetting);
     setActiveSave(true);
-    console.log(userSettings);
     
   }
 

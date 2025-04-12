@@ -17,7 +17,6 @@ export function AuthProvider({ children }) {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((event, session) => {
-            console.log("Auth state changed:", event)
             if (session?.user) {
                 setUser(session.user)
             } else {
@@ -39,7 +38,6 @@ export function AuthProvider({ children }) {
                     setUser(null)
                 }
             } catch (err) {
-                console.error("Error checking session:", err)
                 setUser(null)
             } finally {
                 setLoading(false)
@@ -75,16 +73,13 @@ export function AuthProvider({ children }) {
 
             // Use router for navigation instead of window.location
             if (result.success) {
-                console.log("Sign-out successful")
                 // Force a hard refresh to clear any cached state
                 window.location.href = "/auth/login"
             } else {
-                console.error("Sign-out API call failed:", result.message)
                 // Still redirect even if API fails
                 router.push("/auth/login")
             }
         } catch (err) {
-            console.error("Error signing out:", err)
             // Still redirect on error
             router.push("/auth/login")
         } finally {

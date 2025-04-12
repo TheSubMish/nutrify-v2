@@ -173,7 +173,6 @@ export default function AddMealModal({ isOpen, onClose, onSave, selectedDate, se
       }
     } catch (error) {
       toast.error("Failed to get nutrition info")
-      console.error("Failed to parse AI response:", error)
       setFinding(false)
     }
   }

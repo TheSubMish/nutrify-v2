@@ -23,7 +23,6 @@ export default function ScheduleWeekView({
   const days = eachDayOfInterval({ start: startDate, end: endDate })
 
   const handleCellClick = (day, time) => {
-    console.log("Clicked cell:", day, time)
     onAddMeal({ date: day, time })
   }
 

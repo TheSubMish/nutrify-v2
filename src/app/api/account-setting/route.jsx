@@ -40,7 +40,6 @@ export async function GET(request) {
         .single()
 
     if (settingError && settingError.code !== 'PGRST116') {
-        console.log(settingError);
         return NextResponse.json({ error: 'Failed to fetch account setting' }, { status: 500 })
     }
 
@@ -77,9 +76,6 @@ export async function POST(request) {
         }
 
         const { userId, user_setting } = await request.json()
-
-        console.log(user_setting);
-        
 
         if (!userId) {
             return NextResponse.json({ success: false, message: "User ID is required" }, { status: 400 })
