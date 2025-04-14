@@ -250,7 +250,7 @@ export default function BMICalculator() {
               </RadioGroup>
             </div>
             {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-            <Button onClick={calculateBMI} className="w-full bg-blue-600 hover:bg-blue-700">
+            <Button onClick={calculateBMI} className="w-full secondary-bg">
               <span className="flex items-center justify-center">
                 <Calculator className="mr-2 h-4 w-4" /> Calculate
               </span>

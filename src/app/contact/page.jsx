@@ -59,7 +59,7 @@ export default function ContactPage() {
                   <h2 className="text-xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                     Need Personalized Nutrition Advice?
                   </h2>
-                  <p className="text-gray-500 dark:text-gray-400">
+                  <p className="text-gray-600">
                     Our AI-powered system calculates your dietary intake based on your health conditions and lifestyle. Contact us for guidance or troubleshooting.
                   </p>
                   <div className="space-y-2">
