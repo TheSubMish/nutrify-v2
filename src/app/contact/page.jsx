@@ -48,8 +48,8 @@ export default function ContactPage() {
       <div className="flex flex-col min-h-screen">
         <main className="flex-1">
           <PageHeader
-            title="Contact Us"
-            description="Reach out for support, feedback, or personalized nutrition guidance powered by AI."
+            title="We’re Here to Listen"
+            description="Whether you’re confused about meal plans or just want to chat nutrition, our real human team (backed by smart tech) responds within 24 hours."
           />
 
           <section className="md:mb-10 lg:px-24 xl:px-40 pt-7 lg:pt-10 pb-5">
@@ -70,10 +70,10 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-4">
                   <form className="space-y-4" onSubmit={handleSubmit}>
-                    <Input name="name" value={formData.name} onChange={handleChange} placeholder="Your Name" required />
-                    <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Your Email" required />
-                    <Input name="subject" value={formData.subject} onChange={handleChange} placeholder="Subject" />
-                    <Textarea name="message" value={formData.message} onChange={handleChange} placeholder="Your Message" className="min-h-[150px]" required />
+                    <Input name="name" value={formData.name} onChange={handleChange} placeholder="Your Name" required className="text-gray-600" />
+                    <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Your Email" required className="text-gray-600" />
+                    <Input name="subject" value={formData.subject} onChange={handleChange} placeholder="Subject" className="text-gray-600" />
+                    <Textarea name="message" value={formData.message} onChange={handleChange} placeholder="What’s cooking in your mind? Tell us everything from recipe requests to tech hiccups..." className="min-h-[150px] text-gray-600" required/>
                     <Button variant="secondary" type="submit" className="w-full font-bold" disabled={loading}>
                       {loading ? "Sending..." : "Send Message"}
                     </Button>
