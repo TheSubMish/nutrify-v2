@@ -9,6 +9,8 @@ import Link from "next/link";
 import { ArrowLeft } from 'lucide-react';
 import { toast } from "sonner";
 import { supabase } from "@/supabase.config";
+// import Image from "next/image";
+// import GoogleIcon from "@/assets/img/google-icon.png";
 
 // Initialize Supabase client
 // const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -50,7 +52,7 @@ export default function RegisterPage() {
 
         try {
             setLoading(true);
-            
+
             // Sign up with Supabase
             const { data, error } = await supabase.auth.signUp({
                 email: formData.email,
@@ -69,18 +71,18 @@ export default function RegisterPage() {
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .insert([
-                        { 
-                            id: data.user.id, 
+                        {
+                            id: data.user.id,
                             full_name: formData.name,
                             email: formData.email
                         }
                     ]);
-                
+
                 if (profileError) throw profileError;
-                
+
                 // Redirect to login page with success message
                 toast.success("Account created successfully!");
-                router.push('/dashboard');
+                router.push('/auth/login');
             }
         } catch (err) {
             toast.error(err.message || "An error occurred during registration");
@@ -88,6 +90,26 @@ export default function RegisterPage() {
             setLoading(false);
         }
     };
+
+    // const handleGoogleSignIn = async () => {
+    //     const { error } = await supabase.auth.signInWithOAuth({
+    //         provider: 'google',
+    //         // options: {
+    //         //     redirectTo: `${window.location.origin}/auth/callback`,
+    //         //     queryParams: {
+    //         //         access_type: 'offline',
+    //         //         prompt: 'consent',
+    //         //     }
+    //         // }
+    //     });
+
+    //     if (error) {
+    //         toast.error(error.message || "Google sign-in failed");
+    //         router.push("/auth/register");
+    //     }
+
+    //     // router.push("/auth/callback");
+    // };
 
     return (
         <>
@@ -111,51 +133,51 @@ export default function RegisterPage() {
                                 )}
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Full Name</Label>
-                                    <Input 
-                                        id="name" 
-                                        type="text" 
-                                        placeholder="Enter your full name" 
-                                        required 
+                                    <Input
+                                        id="name"
+                                        type="text"
+                                        placeholder="Enter your full name"
+                                        required
                                         value={formData.name}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email</Label>
-                                    <Input 
-                                        id="email" 
-                                        type="email" 
-                                        placeholder="Enter your email" 
-                                        required 
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="Enter your email"
+                                        required
                                         value={formData.email}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input 
-                                        id="password" 
-                                        type="password" 
-                                        placeholder="Create a password" 
-                                        required 
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="Create a password"
+                                        required
                                         value={formData.password}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="confirmPassword">Confirm Password</Label>
-                                    <Input 
-                                        id="confirmPassword" 
-                                        type="password" 
-                                        placeholder="Confirm your password" 
-                                        required 
+                                    <Input
+                                        id="confirmPassword"
+                                        type="password"
+                                        placeholder="Confirm your password"
+                                        required
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
                                     />
                                 </div>
-                                <Button 
-                                    type="submit" 
-                                    variant="secondary" 
+                                <Button
+                                    type="submit"
+                                    variant="secondary"
                                     className="w-full mt-4"
                                     disabled={loading}
                                 >
@@ -164,6 +186,25 @@ export default function RegisterPage() {
                             </div>
                         </form>
                     </CardContent>
+                    {/* <CardContent>
+                        <div className="flex flex-col items-center space-y-4">
+                            <Button
+                                variant="outline"
+                                className="w-full flex items-center justify-center space-x-2"
+                                onClick={handleGoogleSignIn}
+                                disabled={loading}
+                            >
+                                <Image
+                                    src={GoogleIcon}
+                                    alt="Google"
+                                    width={20}
+                                    height={20}
+                                    className="h-5 w-5"
+                                />
+                                <span>Sign in with Google</span>
+                            </Button>
+                        </div>
+                    </CardContent> */}
                     <CardFooter className="flex flex-col space-y-4">
                         <div className="text-center text-sm">
                             Already have an account?{" "}

@@ -12,6 +12,8 @@ import Label from "@/components/ui/Label";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useAppStore } from "@/store";
+import Image from "next/image";
+import GoogleIcon from "@/assets/img/google-icon.png";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -62,6 +64,26 @@ export default function LoginPage() {
         }
     };
 
+    const handleGoogleSignIn = async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            // options: {
+            //     redirectTo: `${window.location.origin}/auth/callback`,
+            //     queryParams: {
+            //         access_type: 'offline',
+            //         prompt: 'consent',
+            //     }
+            // }
+        });
+
+        if (error) {
+            toast.error(error.message || "Google sign-in failed");
+            router.push("/auth/login");
+        }
+
+        // router.push("/auth/callback");
+    };
+
     return (
         <>
             <Link href="/" className="absolute top-4 left-4">
@@ -109,6 +131,25 @@ export default function LoginPage() {
                                 </Button>
                             </div>
                         </form>
+                    </CardContent>
+                    <CardContent>
+                        <div className="flex flex-col items-center space-y-4">
+                            <Button
+                                variant="outline"
+                                className="w-full flex items-center justify-center space-x-2"
+                                onClick={handleGoogleSignIn}
+                                disabled={loading}
+                            >
+                                <Image
+                                    src={GoogleIcon}
+                                    alt="Google"
+                                    width={20}
+                                    height={20}
+                                    className="h-5 w-5"
+                                />
+                                <span>Sign in with Google</span>
+                            </Button>
+                        </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4">
                         <div className="text-center text-sm">

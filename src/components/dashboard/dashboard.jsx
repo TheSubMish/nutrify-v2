@@ -11,19 +11,25 @@ import { PlusCircle, Zap } from "lucide-react"
 import GeneratePlanModal from "./generate-plan-modal"
 import { useAppStore } from "@/store"
 import { toast } from "sonner"
+import { fetchUser } from "@/utils/fetchUser"
 // import AirQualityIndex from "./aqi"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { user, userMeals, setUserMeals } = useAppStore()
+  const { user, setUser, userMeals, setUserMeals } = useAppStore()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check for user here instead
     if (!user) {
-      toast.error("Please log in to view your dashboard.")
-      return
+      const fetchedUser = fetchUser()
+      if (!fetchedUser) {
+        toast.error("Please log in to view your dashboard.")
+        return
+      } else {
+        setUser(fetchedUser)
+      }
     }
 
     let isMounted = true

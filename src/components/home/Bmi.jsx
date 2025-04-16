@@ -328,7 +328,7 @@ export default function BMICalculator() {
                     onClick={() => (window.location.href = "/dashboard")}
                     className="w-full mt-4 btn-primary hover:bg-primary/90"
                   >
-                    Get Started
+                    Start Generating Meal Plan
                   </Button>
                 </div>
               </div>
