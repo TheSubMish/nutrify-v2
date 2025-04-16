@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 import { Utensils, Coffee, Apple, Drumstick, MoreVertical } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useDrag } from "react-dnd"
 
 // Map meal types to icons and colors
 const mealTypeConfig = {
@@ -33,7 +34,16 @@ const mealTypeConfig = {
 }
 
 export default function MealEvent({ event, isDetailView = false, onEdit, onDuplicate, onDelete }) {
-  const { title, type, starttime, endtime, calories, protein, carbs, fat } = event
+  const { id, title, type, starttime, endtime, calories, protein, carbs, fat, date } = event
+
+  // Setup drag
+  const [{ isDragging }, dragRef] = useDrag({
+    type: 'MEAL_EVENT',
+    item: { id, date, startTime: starttime },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  })
 
   // Get the configuration for this meal type
   const config = mealTypeConfig[type] || {
@@ -51,20 +61,17 @@ export default function MealEvent({ event, isDetailView = false, onEdit, onDupli
     onEdit(event)
   }
 
-  // const handleDuplicate = (e) => {
-  //   e.stopPropagation() // Prevent event bubbling
-  //   onDuplicate(event)
-  // }
-
   const handleDelete = (e) => {
-    e.stopPropagation() // Prevent event bubbling
+    e.stopPropagation()
     onDelete(event)
   }
 
   return (
     <div
+      ref={dragRef}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
       className={cn(
-        "rounded-md border p-2 mb-1 cursor-pointer",
+        "rounded-md border p-2 mb-1 cursor-move",
         config.bgColor,
         config.borderColor,
         isDetailView ? "flex items-start gap-3" : "text-xs",
@@ -80,13 +87,10 @@ export default function MealEvent({ event, isDetailView = false, onEdit, onDupli
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              {/* <Button variant="secondary" size="icon" className="h-6 w-6 ml-1 -mr-1"> */}
-                <MoreVertical className="h-6 w-6 text-black" />
-              {/* </Button> */}
+              <MoreVertical className="h-6 w-6 text-black" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
-              {/* <DropdownMenuItem onClick={handleDuplicate}>Duplicate</DropdownMenuItem> */}
               <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -120,4 +124,3 @@ export default function MealEvent({ event, isDetailView = false, onEdit, onDupli
     </div>
   )
 }
-

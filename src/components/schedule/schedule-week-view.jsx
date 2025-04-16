@@ -2,6 +2,7 @@
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns"
 import { cn } from "@/lib/utils"
 import MealEvent from "./meal-event"
+import { useDrop } from "react-dnd"
 
 // Time slots from 6am to 10pm in 30 minute intervals
 const timeSlots = Array.from({ length: 33 }, (_, i) => {
@@ -17,6 +18,7 @@ export default function ScheduleWeekView({
   onEditMeal,
   onDuplicateMeal,
   onDeleteMeal,
+  onMoveMeal,
 }) {
   const startDate = startOfWeek(currentDate, { weekStartsOn: 0 })
   const endDate = endOfWeek(currentDate, { weekStartsOn: 0 })
@@ -34,32 +36,18 @@ export default function ScheduleWeekView({
       const eventDate = typeof event.date === "string" ? new Date(event.date) : event.date
       const eventStartTime = event.startTime || event.starttime
 
-      // First check if the event is on the correct day
       if (!isSameDay(eventDate, day)) return false
-
-      // If the event time exactly matches the slot time, include it
       if (eventStartTime === timeSlot) return true
-
-      // If this is the last time slot, include any remaining events
       if (!nextSlotTime) return eventStartTime === timeSlot
 
-      // Find the closest time slot
-      if (eventStartTime) {
-        // Convert times to comparable format (minutes since 00:00)
-        const [eventHours, eventMinutes] = eventStartTime.split(":").map(Number)
-        const eventTotalMinutes = eventHours * 60 + eventMinutes
+      const [eH, eM] = eventStartTime.split(":").map(Number)
+      const eventMinutes = eH * 60 + eM
+      const [sH, sM] = timeSlot.split(":").map(Number)
+      const slotMinutes = sH * 60 + sM
+      const [nH, nM] = nextSlotTime.split(":").map(Number)
+      const nextMinutes = nH * 60 + nM
 
-        const [slotHours, slotMinutes] = timeSlot.split(":").map(Number)
-        const slotTotalMinutes = slotHours * 60 + slotMinutes
-
-        const [nextSlotHours, nextSlotMinutes] = nextSlotTime.split(":").map(Number)
-        const nextSlotTotalMinutes = nextSlotHours * 60 + nextSlotMinutes
-
-        // Check if event time falls between current slot and next slot
-        return eventTotalMinutes >= slotTotalMinutes && eventTotalMinutes < nextSlotTotalMinutes
-      }
-
-      return false
+      return eventMinutes >= slotMinutes && eventMinutes < nextMinutes
     })
   }
 
@@ -85,13 +73,21 @@ export default function ScheduleWeekView({
 
               {days.map((day, dayIndex) => {
                 const events = getEventsForSlot(day, time)
+                const [{ isOver }, dropRef] = useDrop({
+                  accept: 'MEAL_EVENT',
+                  drop: (item) => onMoveMeal(item.id, day, time),
+                  collect: (monitor) => ({ isOver: monitor.isOver() }),
+                })
+
                 return (
                   <div
                     key={dayIndex}
+                    ref={dropRef}
                     className={cn(
                       "p-1 min-h-[60px] border-r relative",
                       isSameDay(day, new Date()),
                       timeIndex % 2 === 0 && "border-b border-dashed",
+                      isOver && "bg-blue-100",
                     )}
                     onClick={() => handleCellClick(day, time)}
                   >
