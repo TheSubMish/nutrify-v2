@@ -61,7 +61,7 @@ export default function FitnessDashboard({ setActiveSave }) {
                 })
 
                 // setUserMetrics({ weightHistory: weightHistory ?? [] })
-                if (message){
+                if (message) {
                     toast.success(message)
                 }
 
@@ -79,8 +79,9 @@ export default function FitnessDashboard({ setActiveSave }) {
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <p className="text-xl font-medium">Loading Fitness Goals...</p>
+            <div className="flex flex-col items-center justify-center py-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                <p className="text-muted-foreground">Loading...</p>
             </div>
         )
     }

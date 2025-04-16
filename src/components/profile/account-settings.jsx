@@ -82,12 +82,12 @@ export default function AccountSettings({ setActiveSave }) {
   }, [user]);
 
   const handleToggleChange = (field) => {
-    
+
     const currentSetting = userSettings;
     const newSetting = { ...currentSetting, [field]: !currentSetting[field] };
     setUserSettings(newSetting);
     setActiveSave(true);
-    
+
   }
 
   const handleSelectChange = (value) => {
@@ -100,8 +100,9 @@ export default function AccountSettings({ setActiveSave }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="loader">Loading account setting</div>
+      <div className="flex flex-col items-center justify-center py-10">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     )
   }
