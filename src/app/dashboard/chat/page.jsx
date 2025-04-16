@@ -372,7 +372,7 @@ function LoadingIndicator() {
           <Bot className="h-5 w-5" />
         </div>
 
-        <div className="mx-2 px-4 py-3 rounded-lg bg-muted">
+        <div className="mx-2 px-4 py-3 rounded-lg">
           <div className="flex space-x-2">
             <div className="h-2 w-2 rounded-full bg-current animate-bounce" style={{ animationDelay: "0ms" }}></div>
             <div className="h-2 w-2 rounded-full bg-current animate-bounce" style={{ animationDelay: "150ms" }}></div>

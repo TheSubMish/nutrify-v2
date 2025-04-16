@@ -54,7 +54,8 @@ export async function POST(request) {
     await saveConversation(userId, "user", message)
 
     // Call AI to generate response
-    const prompt = `${message} \n if this is not related to health, nutrition or diet, please ignore this message. send a message "Failed to get response please ask question related to health, nutrition or diet" to get a response related to health, nutrition or diet.`
+    const prompt = `${message} \n If this message is related to health, nutrition, or diet, please provide a detailed response. If it's a general inquiry, such as asking about available assistance, please offer an overview of how you can help. For unrelated topics, respond with: "I'm here to assist with health, nutrition, or diet-related questions. Please ask a question in these areas."`
+
     const aiResponse = await callAi(prompt)
 
     // Save bot response to database
