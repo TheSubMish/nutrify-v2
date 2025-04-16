@@ -61,9 +61,8 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
             const response = await callAi(prompt)
 
             // Try to parse the response as JSON
+            const macroData = JSON.parse(extractJson(response))
             try {
-                const macroData = JSON.parse(extractJson(response))
-
                 // Update the form data with the calculated values
                 setFormData((prev) => ({
                     ...prev,
@@ -79,11 +78,11 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                 }, 500)
             } catch (error) {
                 toast.error("Failed to calculate optimal macros. Using default values.")
-                setStepLoading((prev) => ({ ...prev, 3: false }))
+                // setStepLoading((prev) => ({ ...prev, 3: false }))
             }
         } catch (error) {
             toast.error("Failed to calculate optimal macros. Using default values.")
-            setStepLoading((prev) => ({ ...prev, 3: false }))
+            // setStepLoading((prev) => ({ ...prev, 3: false }))
         }
     }
 
@@ -187,8 +186,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
             }
 
             if (currentStep === 3) {
-                setStepLoading((prev) => ({ ...prev, [currentStepNum]: true }))
-                calculateMacros()
+                await calculateMacros()
             }
 
             setStepLoading((prev) => ({ ...prev, [currentStepNum]: false }))
@@ -234,9 +232,9 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         setCurrentStep(newStep)
 
         // If moving to step 3, calculate macros after changing the step
-        if (newStep === 3 && currentStep === 2) {
-            calculateMacros()
-        }
+        // if (newStep === 3 && currentStep === 2) {
+        //     calculateMacros()
+        // }
     }
 
     const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1))
@@ -259,7 +257,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
             Food Preferences: ${formData.preferences.join(", ")}
             
             Format the response as a JSON array with ${formData.mealsPerDay} meals, each with these properties:
-            title (string), type (breakfast, lunch, dinner, or snack), calories (number), protein (number), carbs (number), fat (number), notes (string with ingredients and preparation). Recommend the meals based on Nepalese cuisine and local ingredients.`
+            title (string), type (breakfast, lunch, dinner, or snack), calories (number), protein (number), carbs (number), fat (number), notes (why this meal was recommended). Recommend the meals based on Nepalese cuisine and local ingredients.`
 
             const response = await callAi(prompt)
 
