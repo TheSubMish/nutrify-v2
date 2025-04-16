@@ -162,8 +162,8 @@ export default function SchedulePage() {
           <div className="flex items-center gap-4">
             <Tabs value={view} onValueChange={setView} className="w-[200px]">
               <TabsList className="grid w-full grid-cols-2 gap-x-2">
-                <TabsTrigger value="day" className={view === "day" ? "primary-bg" : "border-primary border-2"}>Day</TabsTrigger>
-                <TabsTrigger value="week" className={view === "week" ? "primary-bg" : "border-primary border-2"}>Week</TabsTrigger>
+                <TabsTrigger value="day" className={view === "day" ? "border-primary border-2" : "primary-bg"}>Day</TabsTrigger>
+                <TabsTrigger value="week" className={view === "week" ? "border-primary border-2" : "primary-bg"}>Week</TabsTrigger>
               </TabsList>
             </Tabs>
             <Select value={mealTypeFilter} onValueChange={setMealTypeFilter}>
