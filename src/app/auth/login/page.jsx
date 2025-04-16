@@ -132,7 +132,7 @@ export default function LoginPage() {
                             </div>
                         </form>
                     </CardContent>
-                    <CardContent>
+                    {/* <CardContent>
                         <div className="flex flex-col items-center space-y-4">
                             <Button
                                 variant="outline"
@@ -150,7 +150,7 @@ export default function LoginPage() {
                                 <span>Sign in with Google</span>
                             </Button>
                         </div>
-                    </CardContent>
+                    </CardContent> */}
                     <CardFooter className="flex flex-col space-y-4">
                         <div className="text-center text-sm">
                             Don't have an account?{" "}
