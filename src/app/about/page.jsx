@@ -17,12 +17,12 @@ export default function AboutPage() {
             description="Your meal plan combines nutrition research with your unique needs—we analyze everything from your vitamin levels to your weekly grocery budget."
           />
 
-          <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-200 lg:px-24 xl:px-40">
+          <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-200 lg:px-24 xl:px-40">
             <div className="container px-4 md:px-6">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-8">
                 Our Mission
               </h2>
-              <p className="text-xl text-center max-w-[800px] mx-auto text-gray-600 dark:text-gray-700">
+              <p className="text-xl text-center max-w-[800px] mx-auto text-gray-700">
                 We believe nutrition shouldn’t be a one-size-fits-all puzzle. Born from a collaboration between dietitians, chefs, and tech innovators, our platform turns complexity into clarity. Whether you’re managing diabetes, training for a marathon, or just craving better meals, we’re here to make eating well effortless
               </p>
             </div>
@@ -53,7 +53,7 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
+          {/* <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-800">
             <div className="container px-4 md:px-6">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-8">
                 Meet Our Team
@@ -81,7 +81,7 @@ export default function AboutPage() {
             </div>
           </section> */}
 
-          <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-200 lg:px-24 xl:px-40">
+          <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-200 lg:px-24 xl:px-40">
             <div className="container px-4 md:px-6">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-8">
                 Built with Care
@@ -109,7 +109,7 @@ export default function AboutPage() {
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                   Ready to Transform Your Diet?
                 </h2>
-                <p className="mx-auto max-w-[600px] text-gray-500 dark:text-gray-400 md:text-xl">
+                <p className="mx-auto max-w-[600px] text-gray-400 md:text-xl">
                   Join thousands of satisfied users who have improved their nutrition with NutrifyMe.
                 </p>
                 <Button variant="secondary" className="cursor-pointer">
@@ -132,7 +132,7 @@ function ValueCard({ icon, title, description }) {
     <div className="flex flex-col items-center text-center">
       <div className="mb-4 rounded-full bg-primary p-2 text-primary-foreground">{icon}</div>
       <h3 className="mb-2 text-xl font-bold">{title}</h3>
-      <p className="text-gray-500 dark:text-gray-600">{description}</p>
+      <p className="text-gray-600">{description}</p>
     </div>
   )
 }

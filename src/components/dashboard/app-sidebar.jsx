@@ -94,7 +94,7 @@ export function AppSidebar({ userData = defaultUserData }) {
         className={`fixed inset-y-0 left-0 w-[280px] bg-background border-r z-40 transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 md:relative`}
       >
-        <div className="p-6 flex justify-center">
+        <div className="p-6">
           <Link
             href="/"
             className="text-2xl md:text-3xl lg:text-4xl font-bold gabarito-uniquifier"
