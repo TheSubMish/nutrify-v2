@@ -77,6 +77,20 @@ export default function Dashboard() {
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0]
 
+    // console.log(userMeals.filter((meal) => {
+    //   if (!meal || !meal.date) {
+    //     return false
+    //   }
+    //   // Extract just the date part from the meal date
+    //   const mealDate = typeof meal.date === "string" ? meal.date.split("T")[0] : ""
+    //   return mealDate === today
+    // }).sort((a, b) => {
+    //   const timeA = a.starttime || ""
+    //   const timeB = b.starttime || ""
+    //   return timeA.localeCompare(timeB)
+    // }));
+    
+
     return userMeals.filter((meal) => {
       if (!meal || !meal.date) {
         return false
@@ -84,6 +98,10 @@ export default function Dashboard() {
       // Extract just the date part from the meal date
       const mealDate = typeof meal.date === "string" ? meal.date.split("T")[0] : ""
       return mealDate === today
+    }).sort((a, b) => {
+      const timeA = a.startTime || ""
+      const timeB = b.startTime || ""
+      return timeA.localeCompare(timeB)
     })
   }, [userMeals])
 
