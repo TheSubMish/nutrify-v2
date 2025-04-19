@@ -127,29 +127,29 @@ export default function Profile() {
         }
         break;
 
-        case "goals":
-          
-          const fitnessGoalsResponse = await fetch('/api/fitness-goals', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: userData.id,
-              fitness_goals: userGoals
-            }),
-          });
-  
-          result = await fitnessGoalsResponse.json();
-  
-          if (!result.success) {
-            toast.error(result.message);
-          } else {
-            setActiveSave(false)
-            toast.success("Dietary preferences updated successfully!");
-          }
-          break;
-        
+      case "goals":
+
+        const fitnessGoalsResponse = await fetch('/api/fitness-goals', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userData.id,
+            fitness_goals: userGoals
+          }),
+        });
+
+        result = await fitnessGoalsResponse.json();
+
+        if (!result.success) {
+          toast.error(result.message);
+        } else {
+          setActiveSave(false)
+          toast.success("Dietary preferences updated successfully!");
+        }
+        break;
+
       case "account":
         const accountResponse = await fetch('/api/account-setting', {
           method: 'POST',
@@ -190,7 +190,7 @@ export default function Profile() {
   const handleTabChange = (value) => {
     if (activeSave) {
       const confirmLeave = window.confirm("You have unsaved changes. Do you want to leave without saving?");
-      
+
       if (confirmLeave) {
         setActiveTab(value);
         setActiveSave(false);
