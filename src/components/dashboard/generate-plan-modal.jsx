@@ -145,8 +145,6 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                                 goal: goal || "weight-loss",
                                 activityLevel: data.data.fitnessGoals.activity_level || "moderate",
                             }))
-                        } else {
-                            toast.error("Failed to load fitness goals")
                         }
                     } catch (error) {
                         toast.error("Failed to load fitness goals")
