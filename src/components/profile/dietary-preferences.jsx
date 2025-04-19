@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Label from "@/components/ui/Label"
@@ -110,13 +110,11 @@ export default function DietaryPreferences({ setActiveSave }) {
       const newAllergies = [...allergies, newAllergy]
       setAllergies(newAllergies)
       setNewAllergy("")
-      handlePreferenceChange()
     }
   }
 
   const removeAllergy = (item) => {
     setAllergies(allergies.filter((a) => a !== item))
-    handlePreferenceChange()
   }
 
   // Add and remove disliked foods
@@ -125,13 +123,11 @@ export default function DietaryPreferences({ setActiveSave }) {
       const newDislikedFoodsList = [...dislikedFoods, newDislikedFood]
       setDislikedFoods(newDislikedFoodsList)
       setNewDislikedFood("")
-      handlePreferenceChange()
     }
   }
 
   const removeDislikedFood = (item) => {
     setDislikedFoods(dislikedFoods.filter((f) => f !== item))
-    handlePreferenceChange()
   }
 
   // Handle meal frequency changes
@@ -141,20 +137,21 @@ export default function DietaryPreferences({ setActiveSave }) {
       [meal]: !mealFrequency[meal],
     }
     setMealFrequency(updatedMealFrequency)
-    handlePreferenceChange()
   }
 
   // Handle diet type change
   const handleDietTypeChange = (value) => {
     setDietType(value)
-    handlePreferenceChange()
   }
 
   // Handle restriction change
   const handleRestrictionChange = (value) => {
     setRestriction(value)
-    handlePreferenceChange()
   }
+
+  useEffect(() => {
+    handlePreferenceChange()
+  },[dislikedFoods, restriction, dietType, mealFrequency, allergies])
 
   if (loading) {
     return (
