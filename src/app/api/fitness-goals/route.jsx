@@ -66,10 +66,10 @@ export async function GET(request) {
         .order('recorded_at', { ascending: true });
 
     let message = null;
-    if (!fitnessGoals) {
-        fitnessGoals = await getFitnessGoals(userMetrics, weightHistory, defaultGoals)
-        message = "Please update your fitness goals"
-    }
+    // if (!fitnessGoals) {
+    //     fitnessGoals = await getFitnessGoals(userMetrics, weightHistory, defaultGoals)
+    //     message = "Please update your fitness goals"
+    // }
 
     if (weightError) {
         return NextResponse.json({ error: 'Failed to fetch weight history' }, { status: 500 })

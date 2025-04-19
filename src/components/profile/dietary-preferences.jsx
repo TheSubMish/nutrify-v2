@@ -101,7 +101,6 @@ export default function DietaryPreferences({ setActiveSave }) {
     }
 
     setUserPreferences(updatedPreferences)
-    setActiveSave(true)
   }
 
   // Add and remove allergies
@@ -110,11 +109,13 @@ export default function DietaryPreferences({ setActiveSave }) {
       const newAllergies = [...allergies, newAllergy]
       setAllergies(newAllergies)
       setNewAllergy("")
+      setActiveSave(true)
     }
   }
 
   const removeAllergy = (item) => {
     setAllergies(allergies.filter((a) => a !== item))
+    setActiveSave(true)
   }
 
   // Add and remove disliked foods
@@ -124,10 +125,12 @@ export default function DietaryPreferences({ setActiveSave }) {
       setDislikedFoods(newDislikedFoodsList)
       setNewDislikedFood("")
     }
+    setActiveSave(true)
   }
 
   const removeDislikedFood = (item) => {
     setDislikedFoods(dislikedFoods.filter((f) => f !== item))
+    setActiveSave(true)
   }
 
   // Handle meal frequency changes
@@ -137,16 +140,19 @@ export default function DietaryPreferences({ setActiveSave }) {
       [meal]: !mealFrequency[meal],
     }
     setMealFrequency(updatedMealFrequency)
+    setActiveSave(true)
   }
 
   // Handle diet type change
   const handleDietTypeChange = (value) => {
     setDietType(value)
+    setActiveSave(true)
   }
 
   // Handle restriction change
   const handleRestrictionChange = (value) => {
     setRestriction(value)
+    setActiveSave(true)
   }
 
   useEffect(() => {

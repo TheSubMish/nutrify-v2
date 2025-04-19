@@ -15,7 +15,7 @@ import { useAppStore } from "@/store"
 import { toast } from "sonner"
 
 export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
-    const { user, userPreferences, setUserPreferences, userGoals, setUserGoals, setUserMeals } = useAppStore()
+    const { user, userPreferences, setUserPreferences, userGoals, setUserGoals, userMeals, setUserMeals } = useAppStore()
     const [loading, setLoading] = useState(false)
     const [currentStep, setCurrentStep] = useState(1)
     const [stepLoading, setStepLoading] = useState({
@@ -37,10 +37,16 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
         preferences: [],
         dietType: "balanced",
     })
-    const [generatedMeals, setGeneratedMeals] = useState([])
+    const [generatedMeals, setGeneratedMeals] = useState(userMeals || []);
     const [isGenerating, setIsGenerating] = useState(false)
     const [editingMeal, setEditingMeal] = useState(null)
     const [showEditForm, setShowEditForm] = useState(false)
+
+    useEffect(() => {
+        if (isOpen) {
+            setGeneratedMeals(userMeals || []);
+        }
+    }, [isOpen, userMeals]);
 
     const calculateMacros = async () => {
         setStepLoading((prev) => ({ ...prev, 3: true }))
@@ -275,7 +281,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                     starttime: getDefaultTimeForMealType(meal.type),
                     endtime: getDefaultEndTimeForMealType(meal.type),
                 }))
-                setGeneratedMeals(processedMeals)                
+                setGeneratedMeals(processedMeals)
                 setUserMeals(processedMeals)
 
             } catch (error) {
@@ -390,10 +396,14 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
     }
 
     const handleSaveMeal = (updatedMeal) => {
-        setGeneratedMeals(generatedMeals.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)))
-        setShowEditForm(false)
-        setEditingMeal(null)
-    }
+        const updatedMeals = generatedMeals.map((meal) =>
+            meal.id === updatedMeal.id ? updatedMeal : meal
+        );
+        setGeneratedMeals(updatedMeals);
+        setUserMeals(updatedMeals);
+        setShowEditForm(false);
+        setEditingMeal(null);
+    };
 
     const handleAddMeal = () => {
         const today = new Date().toISOString().split("T")[0]
@@ -436,10 +446,10 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
 
             if (data.success) {
                 toast.success("Meal plan saved successfully!")
+                // if (typeof onGeneratePlan === "function") {
+                //     onGeneratePlan(generatedMeals)
+                // }
                 onClose()
-                if (typeof onGeneratePlan === "function") {
-                    onGeneratePlan(generatedMeals)
-                }
             } else {
                 toast.error(data.message || "Failed to save meal plan")
             }
@@ -461,10 +471,10 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                             <div
                                 key={step}
                                 className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep === step
-                                        ? "tertiary-bg text-primary-foreground"
-                                        : currentStep > step
-                                            ? "tertiary-bg text-primary"
-                                            : "bg-muted/20 text-muted-foreground"
+                                    ? "tertiary-bg text-primary-foreground"
+                                    : currentStep > step
+                                        ? "tertiary-bg text-primary"
+                                        : "bg-muted/20 text-muted-foreground"
                                     }`}
                             >
                                 {currentStep > step ? <Check className="h-5 w-5" stroke="#ffffff" /> : step}
@@ -475,7 +485,7 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                     {loading || stepLoading[currentStep] ? (
                         <div className="flex flex-col items-center justify-center py-10">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                            <p className="text-muted-foreground">Loading...</p>
+                            <p className="text-muted-foreground">{currentStep === 1 ? "Loading Goals" : currentStep == 2 ? "Loading Preferences" : currentStep === 3 ? "Calculating Micronutrients" : "Loading Final Summary"}</p>
                         </div>
                     ) : (
                         <>
@@ -699,8 +709,8 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
 
                                             <div
                                                 className={`text-sm ${formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage !== 100
-                                                        ? "text-destructive"
-                                                        : "text-muted-foreground"
+                                                    ? "text-destructive"
+                                                    : "text-muted-foreground"
                                                     }`}
                                             >
                                                 Total: {formData.proteinPercentage + formData.carbsPercentage + formData.fatPercentage}%
@@ -968,10 +978,12 @@ export default function GeneratePlanModal({ isOpen, onClose, onGeneratePlan }) {
                                                             if (editingMeal.id) {
                                                                 handleSaveMeal(editingMeal)
                                                             } else {
-                                                                const newMeal = { ...editingMeal, id: Date.now() }
-                                                                setGeneratedMeals([...generatedMeals, newMeal])
-                                                                setShowEditForm(false)
-                                                                setEditingMeal(null)
+                                                                const newMeal = { ...editingMeal, id: Date.now() };
+                                                                const updatedMeals = [...generatedMeals, newMeal];
+                                                                setGeneratedMeals(updatedMeals);
+                                                                setUserMeals(updatedMeals); // Update global state
+                                                                setShowEditForm(false);
+                                                                setEditingMeal(null);
                                                             }
                                                         }}
                                                     >
