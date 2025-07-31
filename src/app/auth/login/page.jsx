@@ -13,7 +13,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useAppStore } from "@/store";
 import Image from "next/image";
-import GoogleIcon from "@/assets/img/images";
+import google from "@/assets/img";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -132,7 +132,7 @@ export default function LoginPage() {
                             </div>
                         </form>
                     </CardContent>
-                    {/* <CardContent>
+                    <CardContent>
                         <div className="flex flex-col items-center space-y-4">
                             <Button
                                 variant="outline"
@@ -141,7 +141,7 @@ export default function LoginPage() {
                                 disabled={loading}
                             >
                                 <Image
-                                    src={GoogleIcon}
+                                    src={google}
                                     alt="Google"
                                     width={20}
                                     height={20}
@@ -150,7 +150,7 @@ export default function LoginPage() {
                                 <span>Sign in with Google</span>
                             </Button>
                         </div>
-                    </CardContent> */}
+                    </CardContent>
                     <CardFooter className="flex flex-col space-y-4">
                         <div className="text-center text-sm">
                             Don't have an account?{" "}
