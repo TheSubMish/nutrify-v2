@@ -11,7 +11,7 @@ export const callAi = async (prompt) => {
     try {
         const response = await client.chat.completions.create({
             messages: [
-                { role: "system", content: "You are a helpful assistant." },
+                { role: "system", content: "You are a helpful nutritionist and dietitian  assistant." },
                 { role: "user", content: prompt }
             ],
             temperature: 1.0,
