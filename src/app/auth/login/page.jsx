@@ -13,7 +13,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useAppStore } from "@/store";
 import Image from "next/image";
-import google from "@/assets/img";
+import {google} from "@/assets/img";
 
 export default function LoginPage() {
     const router = useRouter();
